@@ -1,0 +1,128 @@
+/* ============================================================
+   PRO ZDRAVÍ NÁRODA — design tokens & fluid typographic scale
+   Editorial pairing: Fraunces (display serif) × Space Grotesk
+   ============================================================ */
+
+:root {
+  /* palette — deep ink + bone + electric amber */
+  --ink-0: #08070b;
+  --ink-1: #0e0d14;
+  --ink-2: #16141f;
+  --ink-3: #211e2e;
+  --bone: #f3efe6;
+  --bone-dim: #cfc9bb;
+  --bone-soft: #948e80;
+  --amber: #ffb443;
+  --amber-hot: #ff8a2a;
+  --violet: #8a7bff;
+  --line: rgb(243 239 230 / 12%);
+  --line-strong: rgb(243 239 230 / 26%);
+
+  /* fluid type scale — clamp() from 360px → 1600px viewport */
+  --step--2: clamp(0.66rem, 0.62rem + 0.18vw, 0.79rem);
+  --step--1: clamp(0.79rem, 0.73rem + 0.26vw, 0.95rem);
+  --step-0: clamp(1rem, 0.93rem + 0.33vw, 1.19rem);
+  --step-1: clamp(1.2rem, 1.09rem + 0.5vw, 1.55rem);
+  --step-2: clamp(1.55rem, 1.36rem + 0.85vw, 2.15rem);
+  --step-3: clamp(2rem, 1.68rem + 1.42vw, 3rem);
+  --step-4: clamp(2.6rem, 2.05rem + 2.42vw, 4.3rem);
+  --step-5: clamp(3.35rem, 2.4rem + 4.2vw, 6.3rem);
+  --step-6: clamp(4rem, 2.5rem + 6.7vw, 8.7rem);
+
+  /* fluid space scale */
+  --space-xs: clamp(0.5rem, 0.45rem + 0.25vw, 0.75rem);
+  --space-s: clamp(0.75rem, 0.65rem + 0.5vw, 1.25rem);
+  --space-m: clamp(1.25rem, 1rem + 1.25vw, 2.5rem);
+  --space-l: clamp(2rem, 1.5rem + 2.5vw, 4.5rem);
+  --space-xl: clamp(3.5rem, 2.5rem + 5vw, 8.5rem);
+  --space-2xl: clamp(5rem, 3.4rem + 8vw, 13rem);
+
+  /* tracking presets */
+  --track-tight: -0.035em;
+  --track-snug: -0.015em;
+  --track-wide: 0.14em;
+  --track-mega: 0.32em;
+
+  --font-display: 'Fraunces', 'Palatino Linotype', 'Book Antiqua', serif;
+  --font-sans: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: dark;
+  color: var(--bone-dim);
+  background: var(--ink-0);
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+*::selection {
+  background: var(--amber);
+  color: var(--ink-0);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--ink-0);
+  overflow-x: clip;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+figure,
+ul,
+ol {
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
