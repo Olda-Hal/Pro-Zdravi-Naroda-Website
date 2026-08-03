@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import './App.css'
 
 /* ============================== data ============================== */
@@ -31,6 +31,52 @@ const auctionItems: AuctionItem[] = [
     title: 'Originální fotografie z příprav',
     description: 'Autorský tisk v galerijní kvalitě, číslovaná série.',
     highestBid: 11900,
+  },
+]
+
+type Artist = {
+  name: string
+  role: string
+  detail: string
+  initials: string
+  hue: number
+}
+
+const artists: Artist[] = [
+  {
+    name: 'Štěpán Rak',
+    role: 'Kytara',
+    detail: 'Kytarový virtuos a dlouholetý jevištní partner Alfréda Strejčka.',
+    initials: 'ŠR',
+    hue: 36,
+  },
+  {
+    name: 'Jitka Molavcová',
+    role: 'Zpěv',
+    detail: 'Zpěvačka a herečka, průvodkyně celým večerem.',
+    initials: 'JM',
+    hue: 258,
+  },
+  {
+    name: 'Kateřina Englichová',
+    role: 'Harfa',
+    detail: 'Přední česká harfistka, sólistka světových pódií.',
+    initials: 'KE',
+    hue: 320,
+  },
+  {
+    name: 'Jan Potměšil',
+    role: 'Recitace',
+    detail: 'Herec a recitátor, osobní přítel rodiny.',
+    initials: 'JP',
+    hue: 16,
+  },
+  {
+    name: 'Pěvecký sbor Gaudium',
+    role: 'Sborový zpěv',
+    detail: 'Komorní sbor uzavře večer společnou skladbou naděje.',
+    initials: 'PG',
+    hue: 200,
   },
 ]
 
@@ -342,6 +388,7 @@ function App() {
   const cursorRing = useRef<HTMLDivElement | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
   const portraitRef = useTilt<HTMLDivElement>(5)
+  const heroPortraitRef = useTilt<HTMLDivElement>(4)
 
   const soldPercentage = useMemo(
     () => Math.min(Math.round((SOLD_TICKETS / TOTAL_TICKETS) * 100), 100),
@@ -465,6 +512,7 @@ function App() {
 
         <nav className={`nav-links ${menuOpen ? 'is-open' : ''}`} aria-label="Hlavní navigace">
           {[
+            ['#artists', 'Umělci'],
             ['#program', 'Program'],
             ['#tickets', 'Vstupenky'],
             ['#auction', 'Aukce'],
@@ -505,26 +553,49 @@ function App() {
             <div className="hero-lines" />
           </div>
 
-          <p className="hero-eyebrow">
-            <span className="eyebrow-dot" aria-hidden="true" />
-            Benefiční koncert na podporu Alfréda Strejčka
-          </p>
+          <div className="hero-stage">
+            <div className="hero-main">
+              <p className="hero-eyebrow">
+                <span className="eyebrow-dot" aria-hidden="true" />
+                Benefiční koncert na podporu Alfréda Strejčka
+              </p>
 
-          <h1 className="hero-title" aria-label="Hudba, která mění skutečné příběhy.">
-            <span className="hero-line">
-              <span className="hero-line-inner">Hudba,</span>
-            </span>
-            <span className="hero-line hero-line-serif">
-              <span className="hero-line-inner">
-                která <em>mění</em>
-              </span>
-            </span>
-            <span className="hero-line">
-              <span className="hero-line-inner">
-                skutečné <span className="hero-accent">příběhy.</span>
-              </span>
-            </span>
-          </h1>
+              <h1 className="hero-title" aria-label="Hudba, která mění skutečné příběhy.">
+                <span className="hero-line">
+                  <span className="hero-line-inner">Hudba,</span>
+                </span>
+                <span className="hero-line hero-line-serif">
+                  <span className="hero-line-inner">
+                    která <em>mění</em>
+                  </span>
+                </span>
+                <span className="hero-line">
+                  <span className="hero-line-inner">
+                    skutečné <span className="hero-accent">příběhy.</span>
+                  </span>
+                </span>
+              </h1>
+            </div>
+
+            {/* portrét — nahraďte vizuál skutečnou fotografií (např. <img src={portrait} alt="Alfréd Strejček" />) */}
+            <figure className="hero-portrait">
+              <div className="hero-portrait-frame" ref={heroPortraitRef} data-cursor="hover">
+                <div className="hero-portrait-visual" aria-hidden="true">
+                  <span className="hero-portrait-rings" />
+                  <span className="hero-portrait-glow" />
+                  <span className="hero-portrait-silhouette" />
+                </div>
+                <div className="hero-portrait-glare" aria-hidden="true" />
+                <span className="hero-portrait-tag" aria-hidden="true">
+                  20 / 11 / 2026
+                </span>
+              </div>
+              <figcaption>
+                <strong>Alfréd Strejček</strong>
+                <span>Večer věnovaný podpoře jeho léčby</span>
+              </figcaption>
+            </figure>
+          </div>
 
           <div className="hero-lower">
             <p className="hero-text">
@@ -583,10 +654,13 @@ function App() {
           </div>
         </div>
 
+        {/* ================= artists ================= */}
+        <ArtistsSection />
+
         {/* ================= about ================= */}
         <section className="section about" id="about">
           <Reveal className="section-head">
-            <span className="section-index">01</span>
+            <span className="section-index">02</span>
             <KineticHeading text="O koncertu" className="section-title" />
           </Reveal>
           <Reveal className="about-body" delay={120}>
@@ -623,7 +697,7 @@ function App() {
         {/* ================= ways to help ================= */}
         <section className="section ways">
           <Reveal className="section-head">
-            <span className="section-index">02</span>
+            <span className="section-index">03</span>
             <KineticHeading text="Jak můžete pomoci" className="section-title" />
           </Reveal>
           <div className="ways-grid">
@@ -646,7 +720,7 @@ function App() {
         <section className="section account" id="account">
           <Reveal className="account-inner">
             <div className="account-copy">
-              <span className="section-index">03</span>
+              <span className="section-index">04</span>
               <KineticHeading text="Transparentní účet" className="section-title" />
               <p>
                 Naskenujte QR kód nebo použijte číslo účtu. Dar je možné odeslat během
@@ -678,7 +752,7 @@ function App() {
         {/* ================= program ================= */}
         <section className="section program" id="program">
           <Reveal className="section-head">
-            <span className="section-index">04</span>
+            <span className="section-index">05</span>
             <KineticHeading text="Program večera" className="section-title" />
           </Reveal>
           <div className="timeline" role="list" aria-label="Program koncertu">
@@ -714,7 +788,7 @@ function App() {
             </div>
 
             <div className="tickets-copy">
-              <span className="section-index">05</span>
+              <span className="section-index">06</span>
               <KineticHeading text="Vstupenky" className="section-title" />
               <ul className="tickets-list">
                 <li>
@@ -755,7 +829,7 @@ function App() {
         {/* ================= auction ================= */}
         <section className="section auction" id="auction">
           <Reveal className="section-head">
-            <span className="section-index">06</span>
+            <span className="section-index">07</span>
             <KineticHeading text="Online aukce" className="section-title" />
           </Reveal>
 
@@ -839,7 +913,7 @@ function App() {
         {/* ================= partners ================= */}
         <section className="section partners" id="partners">
           <Reveal className="section-head">
-            <span className="section-index">07</span>
+            <span className="section-index">08</span>
             <KineticHeading text="Partneři" className="section-title" />
           </Reveal>
           <div className="partners-grid" role="list" aria-label="Partneři akce">
@@ -891,6 +965,113 @@ function App() {
         </a>
       </footer>
     </div>
+  )
+}
+
+/** Artists roster — big-name list with cursor-chasing preview card */
+function ArtistsSection() {
+  const [active, setActive] = useState<number | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
+  const previewRef = useRef<HTMLDivElement | null>(null)
+
+  /* preview follows the cursor with lerp + velocity tilt */
+  useEffect(() => {
+    const list = listRef.current
+    const preview = previewRef.current
+    if (!list || !preview || window.matchMedia('(pointer: coarse)').matches) return
+
+    let x = 0
+    let y = 0
+    let tx = 0
+    let ty = 0
+    let raf = 0
+
+    const onMove = (e: MouseEvent) => {
+      const rect = list.getBoundingClientRect()
+      tx = e.clientX - rect.left
+      ty = e.clientY - rect.top
+    }
+    const loop = () => {
+      x += (tx - x) * 0.13
+      y += (ty - y) * 0.13
+      const tiltZ = Math.max(Math.min((tx - x) * 0.1, 12), -12)
+      preview.style.transform = `translate(${x}px, ${y}px) translate(-50%, -55%) rotate(${tiltZ}deg)`
+      raf = requestAnimationFrame(loop)
+    }
+
+    list.addEventListener('mousemove', onMove, { passive: true })
+    raf = requestAnimationFrame(loop)
+    return () => {
+      list.removeEventListener('mousemove', onMove)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  return (
+    <section className="section artists" id="artists">
+      <Reveal className="section-head">
+        <span className="section-index">01</span>
+        <KineticHeading text="Účinkující" className="section-title" />
+      </Reveal>
+
+      <Reveal delay={100}>
+        <p className="artists-lead">
+          Na jednom pódiu se pro Alfréda spojí jeho <em>přátelé a kolegové</em> z jeviště.
+        </p>
+      </Reveal>
+
+      <div
+        className={`artists-list ${active !== null ? 'has-active' : ''}`}
+        ref={listRef}
+        onMouseLeave={() => setActive(null)}
+        role="list"
+        aria-label="Vystupující umělci"
+      >
+        {artists.map((artist, i) => (
+          <Reveal key={artist.name} delay={i * 80}>
+            <article
+              className={`artist-row ${active === i ? 'is-active' : ''}`}
+              onMouseEnter={() => setActive(i)}
+              onFocus={() => setActive(i)}
+              role="listitem"
+              tabIndex={0}
+              data-cursor="hover"
+            >
+              <span className="artist-index" aria-hidden="true">
+                {pad(i + 1)}
+              </span>
+              <h3 className="artist-name">
+                <span className="artist-name-inner" data-text={artist.name}>
+                  {artist.name}
+                </span>
+              </h3>
+              <div className="artist-meta">
+                <span className="artist-role">{artist.role}</span>
+                <span className="artist-detail">{artist.detail}</span>
+              </div>
+              <span className="artist-arrow" aria-hidden="true">
+                ✦
+              </span>
+            </article>
+          </Reveal>
+        ))}
+
+        {/* floating preview — swap initials for artist photos when available */}
+        <div className={`artist-preview ${active !== null ? 'is-on' : ''}`} ref={previewRef} aria-hidden="true">
+          {artists.map((artist, i) => (
+            <div
+              key={artist.name}
+              className={`artist-preview-card ${active === i ? 'is-current' : ''}`}
+              style={{ '--artist-hue': artist.hue } as CSSProperties}
+            >
+              <span className="artist-preview-silhouette" />
+              <span className="artist-preview-initials">{artist.initials}</span>
+              <span className="artist-preview-role">{artist.role}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
