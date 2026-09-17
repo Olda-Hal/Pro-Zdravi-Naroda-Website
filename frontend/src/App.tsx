@@ -2,37 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import './App.css'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+
 /* ============================== data ============================== */
 
 const TOTAL_TICKETS = 120
+const STANDING_TICKETS = 40
 const SOLD_TICKETS = 74
 const TICKET_PRICE = 1490
-const ACCOUNT_NUMBER = '2602456719/2010'
-const AUCTION_END = '2026-11-20T20:30:00+01:00'
-
-type AuctionItem = {
-  title: string
-  description: string
-  highestBid: number
-}
-
-const auctionItems: AuctionItem[] = [
-  {
-    title: 'Podepsaný koncertní program',
-    description: 'Limitovaná edice s osobním věnováním Alfréda Strejčka.',
-    highestBid: 18500,
-  },
-  {
-    title: 'Komorní večer pro dva',
-    description: 'Setkání s umělci po skončení koncertu.',
-    highestBid: 24200,
-  },
-  {
-    title: 'Originální fotografie z příprav',
-    description: 'Autorský tisk v galerijní kvalitě, číslovaná série.',
-    highestBid: 11900,
-  },
-]
+const ACCOUNT_NUMBER = '2403575844/2010'
+const EVENT_LOCATION = 'CROWD CAFE, PRAHA'
+const EVENT_URL = 'https://www.crowdcafe.cz/'
+const EVENT_EMAIL = 'info@prozdravinaroda.cz'
 
 type Artist = {
   name: string
@@ -40,60 +21,71 @@ type Artist = {
   detail: string
   initials: string
   hue: number
+  link: string
 }
 
 const artists: Artist[] = [
   {
-    name: 'Štěpán Rak',
-    role: 'Kytara',
-    detail: 'Kytarový virtuos a dlouholetý jevištní partner Alfréda Strejčka.',
-    initials: 'ŠR',
-    hue: 36,
+    name: 'Jaroslav Svěcený',
+    role: 'Hudební produkce',
+    detail: 'Na jednom pódiu se spojí slova a hudba pro Alfréda od přátel.',
+    initials: 'JS',
+    hue: 34,
+    link: 'https://www.sveceny.cz/',
   },
   {
-    name: 'Jitka Molavcová',
-    role: 'Zpěv',
-    detail: 'Zpěvačka a herečka, průvodkyně celým večerem.',
-    initials: 'JM',
-    hue: 258,
-  },
-  {
-    name: 'Kateřina Englichová',
-    role: 'Harfa',
-    detail: 'Přední česká harfistka, sólistka světových pódií.',
-    initials: 'KE',
-    hue: 320,
-  },
-  {
-    name: 'Jan Potměšil',
-    role: 'Recitace',
-    detail: 'Herec a recitátor, osobní přítel rodiny.',
-    initials: 'JP',
+    name: 'Cimbál classic',
+    role: 'Tradice a energie',
+    detail: 'Tónová kultura, která přináší půvab a sílu do celého večera.',
+    initials: 'CC',
     hue: 16,
+    link: 'https://cimbalclassic.net/',
   },
   {
-    name: 'Pěvecký sbor Gaudium',
-    role: 'Sborový zpěv',
-    detail: 'Komorní sbor uzavře večer společnou skladbou naděje.',
-    initials: 'PG',
-    hue: 200,
+    name: 'Alfréd Strejček',
+    role: 'Patron a host',
+    detail: 'Karel IV první vstup, osobní i společenský příklad pro diváky.',
+    initials: 'AS',
+    hue: 196,
+    link: 'https://www.alfredstrejcek.cz/',
+  },
+  {
+    name: 'Martina Kociánová',
+    role: 'Moderátorka',
+    detail: 'Slovem celý koncert moderuje a propojuje hudbu, myšlenku a lidstvo.',
+    initials: 'MK',
+    hue: 278,
+    link: 'https://www.alfredstrejcek.cz/',
   },
 ]
 
 const timeline = [
-  { time: '18:00', title: 'Otevření foyer', detail: 'Přivítání hostů a úvodní networking.' },
-  { time: '19:00', title: 'Zahájení večera', detail: 'Slovo organizátorů a představení poslání akce.' },
-  { time: '19:30', title: 'Hlavní koncert', detail: 'Benefiční hudební vystoupení věnované podpoře léčby.' },
-  { time: '21:00', title: 'Závěr a poděkování', detail: 'Finální vyúčtování pomoci a vyhlášení aukce.' },
+  { time: '17:00', title: 'Otevření CROWD CAFE', detail: 'Přivítání hostů a zahájení večera.' },
+  { time: '18:00', title: 'Zahájení večera', detail: 'Úvodní slovo pořadatelů.' },
+  { time: '18:15', title: 'Zahájení hudební produkce', detail: 'Jaroslav Svěcený uvádí hudební část programu.' },
+  { time: '18:25', title: 'KAREL IV první vstup', detail: 'Alfréd Strejček v prvním hudebním vstupu.' },
+  { time: '18:30', title: 'Vystoupení sudiček', detail: 'Vánočně laděný mezní moment celého večera.' },
+  { time: '18:45', title: 'Pokračuje hudební produkce', detail: 'Cimbál classic a Jaroslav Svěcený předávají hudbu dál.' },
+  { time: '19:45', title: 'Závěr večera a poděkování', detail: 'Oslava, závěrečné poděkování a společné vyjádření podpory.' },
 ]
 
 const partners = [
-  'Nadace Harmonie',
-  'Město Praha',
-  'Kulturní Forum',
-  'Studio Forte',
-  'Mecenáši Plus',
-  'Nadace Světlo',
+  { name: 'Dlouhé zdraví', url: 'https://www.dlouhezdravi.com/' },
+  { name: 'CROWD CAFE', url: 'https://www.crowdcafe.cz/' },
+  { name: 'KLM invest, a.s.', url: '#' },
+  { name: 'Magnolie cukrárna', url: 'https://www.cukrarnamagnolie.cz/' },
+]
+
+const spiritualPatron = {
+  name: 'Český Templářský Řád O.S.M.T.H, komenda Čejkovice',
+  url: 'https://osmth.cz/',
+}
+
+const projectPatrons = [
+  { year: 'Rok 2027', name: 'Tomáš Garrigue Masaryk', url: 'https://cs.wikipedia.org/wiki/Tom%C3%A1%C5%A1_Garrigue_Masaryk' },
+  { year: 'Rok 2028', name: 'Jan Ámos Komenský', url: 'https://cs.wikipedia.org/wiki/Jan_Amos_Komensk%C3%BD' },
+  { year: 'Rok 2029', name: 'Josef Dobrovský', url: 'https://cs.wikipedia.org/wiki/Josef_Dobrovsk%C3%BD' },
+  { year: 'Rok 2030', name: 'Karel Jaromír Erben', url: 'https://cs.wikipedia.org/wiki/Karel_Jarom%C3%ADr_Erben' },
 ]
 
 const helpWays = [
@@ -109,8 +101,8 @@ const helpWays = [
   },
   {
     index: '03',
-    title: 'Zapojit se do aukce',
-    text: 'Unikátní předměty v online aukci navýší celkovou částku podpory.',
+    title: 'Podpořit projekt',
+    text: 'Finanční dar či vstupenka přidá sílu celému benefičnímu programu.',
   },
   {
     index: '04',
@@ -127,17 +119,6 @@ const formatMoney = (value: number) =>
     currency: 'CZK',
     maximumFractionDigits: 0,
   }).format(value)
-
-const formatCountdown = (targetDate: string) => {
-  const diff = Math.max(new Date(targetDate).getTime() - Date.now(), 0)
-  return {
-    days: Math.floor(diff / 86_400_000),
-    hours: Math.floor((diff / 3_600_000) % 24),
-    minutes: Math.floor((diff / 60_000) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-    done: diff === 0,
-  }
-}
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -320,30 +301,22 @@ function CountUp({ target, duration = 1400 }: { target: number; duration?: numbe
   return <span ref={ref}>{value}</span>
 }
 
-/** Flip-style countdown unit */
-function CountUnit({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="count-unit">
-      <span className="count-value" key={value}>
-        {pad(value)}
-      </span>
-      <span className="count-label">{label}</span>
-    </div>
-  )
-}
-
 function MagneticButton({
   children,
   href,
   variant = 'primary',
   onClick,
   type,
+  target,
+  rel,
 }: {
   children: ReactNode
   href?: string
   variant?: 'primary' | 'ghost'
   onClick?: () => void
   type?: 'button' | 'submit'
+  target?: string
+  rel?: string
 }) {
   const ref = useMagnetic<HTMLSpanElement>(0.3)
   const inner = (
@@ -359,7 +332,7 @@ function MagneticButton({
 
   if (href) {
     return (
-      <a className={`btn btn-${variant}`} href={href} data-cursor="hover">
+      <a className={`btn btn-${variant}`} href={href} data-cursor="hover" target={target} rel={rel}>
         {inner}
       </a>
     )
@@ -376,13 +349,21 @@ function MagneticButton({
 function App() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [copied, setCopied] = useState(false)
-  const [countdown, setCountdown] = useState(formatCountdown(AUCTION_END))
-  const [currentBid, setCurrentBid] = useState(26500)
-  const [bidName, setBidName] = useState('')
-  const [bidAmount, setBidAmount] = useState('')
-  const [isAdult, setIsAdult] = useState(false)
-  const [bidFeedback, setBidFeedback] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [apiStats, setApiStats] = useState({
+    total_tickets: TOTAL_TICKETS,
+    sold_tickets: SOLD_TICKETS,
+    remaining_tickets: TOTAL_TICKETS - SOLD_TICKETS,
+    price_per_ticket: TICKET_PRICE,
+    currency: 'CZK',
+  })
+  const [orderForm, setOrderForm] = useState({
+    customer_name: '',
+    customer_email: '',
+    ticket_count: 2,
+  })
+  const [checkoutState, setCheckoutState] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const cursorDot = useRef<HTMLDivElement | null>(null)
   const cursorRing = useRef<HTMLDivElement | null>(null)
@@ -391,9 +372,22 @@ function App() {
   const heroPortraitRef = useTilt<HTMLDivElement>(4)
 
   const soldPercentage = useMemo(
-    () => Math.min(Math.round((SOLD_TICKETS / TOTAL_TICKETS) * 100), 100),
-    [],
+    () => Math.min(Math.round((apiStats.sold_tickets / apiStats.total_tickets) * 100), 100),
+    [apiStats.sold_tickets, apiStats.total_tickets],
   )
+
+  const loadTicketStats = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tickets/stats`)
+      if (!response.ok) return
+      const data = await response.json()
+      setApiStats((current) => ({ ...current, ...data }))
+    } catch {
+      // keep current default values if the API is temporarily unavailable
+    }
+  }, [])
+
+  useEffect(() => { void loadTicketStats() }, [loadTicketStats])
 
   /* scroll progress bar + hero parallax */
   useEffect(() => {
@@ -452,12 +446,6 @@ function App() {
     }
   }, [])
 
-  /* countdown tick */
-  useEffect(() => {
-    const timer = window.setInterval(() => setCountdown(formatCountdown(AUCTION_END)), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
-
   const copyAccount = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(ACCOUNT_NUMBER)
@@ -468,31 +456,76 @@ function App() {
     }
   }, [])
 
-  const submitBid = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const parsedBid = Number(bidAmount)
-
-    if (!isAdult) {
-      setBidFeedback({ tone: 'err', text: 'Pro přihazování je nutné potvrdit věk 18+.' })
-      return
-    }
-    if (!bidName.trim()) {
-      setBidFeedback({ tone: 'err', text: 'Vyplňte prosím jméno přihazujícího.' })
-      return
-    }
-    if (!Number.isFinite(parsedBid) || parsedBid <= currentBid) {
-      setBidFeedback({ tone: 'err', text: `Nová nabídka musí být vyšší než ${formatMoney(currentBid)}.` })
-      return
-    }
-
-    setCurrentBid(parsedBid)
-    setBidAmount('')
-    setBidFeedback({ tone: 'ok', text: 'Příhoz úspěšně zaznamenán. Děkujeme za podporu!' })
-  }
-
   const navigate = (hash: string) => {
     setMenuOpen(false)
     document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const onOrderSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const count = Number(orderForm.ticket_count)
+
+    if (!orderForm.customer_name.trim()) {
+      setCheckoutState({ tone: 'err', text: 'Vyplňte prosím jméno a příjmení.' })
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(orderForm.customer_email)) {
+      setCheckoutState({ tone: 'err', text: 'Zadejte platný e-mail pro potvrzení objednávky.' })
+      return
+    }
+    if (!Number.isFinite(count) || count < 1 || count > Math.max(apiStats.remaining_tickets, 1)) {
+      setCheckoutState({ tone: 'err', text: `Vyberte počet vstupenek od 1 do ${apiStats.remaining_tickets}.` })
+      return
+    }
+
+    setIsSubmitting(true)
+    setCheckoutState({ tone: 'ok', text: 'Vytvářím objednávku a připravuji platbu…' })
+
+    try {
+      const orderRes = await fetch(`${API_BASE_URL}/api/tickets/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: orderForm.customer_name,
+          customer_email: orderForm.customer_email,
+          ticket_count: count,
+          payment_provider: 'gopay',
+        }),
+      })
+
+      const orderData = await orderRes.json().catch(() => null)
+      if (!orderRes.ok) {
+        throw new Error(orderData?.detail || 'Objednávku se nepodařilo vytvořit.')
+      }
+
+      const paymentRes = await fetch(`${API_BASE_URL}/api/tickets/orders/${orderData.id}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'gopay' }),
+      })
+      const paymentData = await paymentRes.json().catch(() => null)
+      if (!paymentRes.ok) {
+        throw new Error(paymentData?.detail || 'Platbu se nepodařilo inicializovat.')
+      }
+
+      setCheckoutState({
+        tone: 'ok',
+        text: `Objednávka ${orderData.order_number} byla vytvořena. Přesměrování na platební bránu…`,
+      })
+      await loadTicketStats()
+
+      if (paymentData?.redirect_url) {
+        window.location.href = paymentData.redirect_url
+        return
+      }
+    } catch (error) {
+      setCheckoutState({
+        tone: 'err',
+        text: error instanceof Error ? error.message : 'Něco se nepodařilo. Zkuste to prosím znovu.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -515,7 +548,6 @@ function App() {
             ['#artists', 'Umělci'],
             ['#program', 'Program'],
             ['#tickets', 'Vstupenky'],
-            ['#auction', 'Aukce'],
             ['#partners', 'Partneři'],
             ['#contact', 'Kontakt'],
           ].map(([hash, label]) => (
@@ -557,22 +589,25 @@ function App() {
             <div className="hero-main">
               <p className="hero-eyebrow">
                 <span className="eyebrow-dot" aria-hidden="true" />
-                Benefiční koncert na podporu Alfréda Strejčka
+                Patron koncertu: Karel IV
               </p>
 
-              <h1 className="hero-title" aria-label="Hudba, která mění skutečné příběhy.">
+              <h1 className="hero-title" aria-label="Hudba a slova, která probouzejí a upevňují zdraví národa.">
                 <span className="hero-line">
-                  <span className="hero-line-inner">Hudba,</span>
+                  <span className="hero-line-inner">Hudba a slova,</span>
                 </span>
                 <span className="hero-line hero-line-serif">
                   <span className="hero-line-inner">
-                    která <em>mění</em>
+                    která <em>probouzejí</em>
                   </span>
                 </span>
                 <span className="hero-line">
                   <span className="hero-line-inner">
-                    skutečné <span className="hero-accent">příběhy.</span>
+                    a <span className="hero-accent">upevňují</span>
                   </span>
+                </span>
+                <span className="hero-line">
+                  <span className="hero-line-inner">zdraví národa.</span>
                 </span>
               </h1>
             </div>
@@ -587,20 +622,38 @@ function App() {
                 </div>
                 <div className="hero-portrait-glare" aria-hidden="true" />
                 <span className="hero-portrait-tag" aria-hidden="true">
-                  20 / 11 / 2026
+                  21 / 10 / 2026
                 </span>
               </div>
               <figcaption>
                 <strong>Alfréd Strejček</strong>
-                <span>Večer věnovaný podpoře jeho léčby</span>
+                <span>První koncert pro zdraví národa</span>
               </figcaption>
             </figure>
           </div>
 
+          <div className="hero-patron" role="note" aria-label="Patron ročníku a jeho význam">
+            <div className="hero-patron-photo">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Charles_IV_%28HRR%29.jpg/640px-Charles_IV_%28HRR%29.jpg"
+                alt="Karel IV"
+              />
+            </div>
+            <div className="hero-patron-copy">
+              <span className="hero-patron-label">Patron ročníku</span>
+              <h2>Karel IV.</h2>
+              <p>
+                Osobnost, která svým životem, vládou a dílem upevňovala zdraví národa,
+                jeho kulturu a vzájemnou odpovědnost. Právě proto je první koncert věnován
+                vzoru, jenž ukazuje, jak důležité je chránit kořeny, vědomí i společný odkaz.
+              </p>
+            </div>
+          </div>
+
           <div className="hero-lower">
             <p className="hero-text">
-              Výjimečný večer spojující umění, solidaritu a lidskost. Každá vstupenka
-              i&nbsp;dar pomáhají přímo tam, kde je to potřeba.
+              Benefiční kulturní večer, který propojuje hudbu, slova a solidaritu. Každá vstupenka
+              i&nbsp;dar pomáhá vytvářet prostor pro zdraví, vzájemnou podporu a přímou pomoc.
             </p>
 
             <div className="hero-cta">
@@ -614,11 +667,11 @@ function App() {
           <div className="hero-meta" role="list" aria-label="Detaily koncertu">
             <div role="listitem">
               <span>Datum</span>
-              <strong>20. 11. 2026</strong>
+              <strong>21.10.2026</strong>
             </div>
             <div role="listitem">
               <span>Místo</span>
-              <strong>Rudolfinum, Praha</strong>
+              <strong>{EVENT_LOCATION}</strong>
             </div>
             <div role="listitem">
               <span>Vstupné</span>
@@ -626,7 +679,7 @@ function App() {
             </div>
             <div role="listitem">
               <span>Kapacita</span>
-              <strong>{TOTAL_TICKETS} míst</strong>
+              <strong>{TOTAL_TICKETS} sedadel / {STANDING_TICKETS} stání</strong>
             </div>
           </div>
 
@@ -641,9 +694,9 @@ function App() {
           <div className="marquee-track">
             {Array.from({ length: 2 }).map((_, i) => (
               <div className="marquee-group" key={i}>
-                <span>Rudolfinum</span>
+                <span>CROWD CAFE</span>
                 <span className="marquee-star">✦</span>
-                <span>20. listopadu 2026</span>
+                <span>21.10.2026</span>
                 <span className="marquee-star">✦</span>
                 <span>Benefiční koncert</span>
                 <span className="marquee-star">✦</span>
@@ -666,8 +719,9 @@ function App() {
           <Reveal className="about-body" delay={120}>
             <p className="about-lead">
               <em>Pro zdraví národa</em> je benefiční kulturní večer, který propojuje uměleckou
-              kvalitu s&nbsp;jasným posláním. Vytváříme prostor, kde podpora dostává konkrétní
-              podobu a&nbsp;každý host je součástí skutečné pomoci.
+              kvalitu s&nbsp;jasným posláním. Vytváříme tak prostor, kde podpora dostává konkrétní
+              podobu a každý host je součástí skutečné pomoci. Zdraví národa začíná u jednotlivce
+              ukotveného a znalého svých kořenů a odpovědného k odkazu předků.
             </p>
             <div className="about-stats" role="list">
               <div role="listitem">
@@ -681,14 +735,13 @@ function App() {
                 <strong>
                   <CountUp target={TOTAL_TICKETS} />
                 </strong>
-                <span>míst celkem</span>
+                <span>sedadel celkem</span>
               </div>
               <div role="listitem">
                 <strong>
-                  <CountUp target={currentBid} duration={1800} />
-                  <span className="stat-unit">Kč</span>
+                  <CountUp target={STANDING_TICKETS} />
                 </strong>
-                <span>nejvyšší příhoz v aukci</span>
+                <span>míst na stání</span>
               </div>
             </div>
           </Reveal>
@@ -732,8 +785,8 @@ function App() {
                   {copied ? '✓ Zkopírováno' : 'Kliknutím zkopírovat'}
                 </span>
               </button>
-              <a className="text-link" href="https://www.fio.cz" target="_blank" rel="noreferrer" data-cursor="hover">
-                Otevřít transparentní účet
+              <a className="text-link" href={EVENT_URL} target="_blank" rel="noreferrer" data-cursor="hover">
+                CROWD CAFE, Praha
                 <span aria-hidden="true"> ↗</span>
               </a>
             </div>
@@ -779,7 +832,7 @@ function App() {
               <div className="ticket-punch ticket-punch-r" />
               <p className="ticket-brand">Pro zdraví národa</p>
               <strong className="ticket-price">{formatMoney(TICKET_PRICE)}</strong>
-              <span className="ticket-meta">20.&nbsp;11.&nbsp;2026 — 19:00 — Rudolfinum</span>
+              <span className="ticket-meta">21.10.2026 — 19:00 — CROWD CAFE, PRAHA</span>
               <div className="ticket-barcode">
                 {Array.from({ length: 28 }).map((_, i) => (
                   <span key={i} style={{ width: `${((i * 13) % 4) + 1}px` }} />
@@ -793,26 +846,26 @@ function App() {
               <ul className="tickets-list">
                 <li>
                   <span>Datum</span>
-                  <strong>20. listopadu 2026</strong>
+                  <strong>21.10.2026</strong>
                 </li>
                 <li>
                   <span>Čas</span>
-                  <strong>19:00 (otevření 18:00)</strong>
+                  <strong>19:00</strong>
                 </li>
                 <li>
                   <span>Místo</span>
-                  <strong>Rudolfinum, Praha</strong>
+                  <strong>{EVENT_LOCATION}</strong>
                 </li>
                 <li>
-                  <span>Sezení</span>
-                  <strong>Volné, kapacita {TOTAL_TICKETS} osob</strong>
+                  <span>Kapacita</span>
+                  <strong>{TOTAL_TICKETS} sedadel / {STANDING_TICKETS} na stání</strong>
                 </li>
               </ul>
 
               <div className="capacity" aria-live="polite">
                 <div className="capacity-label">
                   <span>
-                    Prodáno {SOLD_TICKETS} / {TOTAL_TICKETS}
+                    Prodáno {apiStats.sold_tickets} / {apiStats.total_tickets}
                   </span>
                   <strong>{soldPercentage}%</strong>
                 </div>
@@ -821,92 +874,64 @@ function App() {
                 </div>
               </div>
 
-              <MagneticButton href="#">Koupit vstupenku — {formatMoney(TICKET_PRICE)}</MagneticButton>
+              <form className="ticket-order-form" id="ticket-order-form" onSubmit={onOrderSubmit}>
+                <h3>Rezervace vstupenek</h3>
+
+                <div className="field">
+                  <input
+                    id="ticket-name"
+                    name="ticket-name"
+                    value={orderForm.customer_name}
+                    onChange={(e) => setOrderForm((prev) => ({ ...prev, customer_name: e.target.value }))}
+                    placeholder=" "
+                    autoComplete="name"
+                  />
+                  <label htmlFor="ticket-name">Jméno a příjmení</label>
+                </div>
+
+                <div className="field">
+                  <input
+                    id="ticket-email"
+                    name="ticket-email"
+                    type="email"
+                    value={orderForm.customer_email}
+                    onChange={(e) => setOrderForm((prev) => ({ ...prev, customer_email: e.target.value }))}
+                    placeholder=" "
+                    autoComplete="email"
+                  />
+                  <label htmlFor="ticket-email">E-mail</label>
+                </div>
+
+                <div className="field">
+                  <input
+                    id="ticket-count"
+                    name="ticket-count"
+                    type="number"
+                    min={1}
+                    max={Math.max(apiStats.remaining_tickets, 1)}
+                    value={orderForm.ticket_count}
+                    onChange={(e) => setOrderForm((prev) => ({ ...prev, ticket_count: Number(e.target.value) || 1 }))}
+                    placeholder=" "
+                  />
+                  <label htmlFor="ticket-count">Počet vstupenek</label>
+                </div>
+
+                <div className="ticket-summary">
+                  <span>{orderForm.ticket_count} vstupenek</span>
+                  <strong>{formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}</strong>
+                </div>
+
+                <MagneticButton type="submit">
+                  {isSubmitting ? 'Připravuje se platba…' : `Koupit vstupenku — ${formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}`}
+                </MagneticButton>
+
+                {checkoutState && (
+                  <p className={`form-feedback is-${checkoutState.tone}`} role="status">
+                    {checkoutState.text}
+                  </p>
+                )}
+              </form>
             </div>
-          </Reveal>
-        </section>
-
-        {/* ================= auction ================= */}
-        <section className="section auction" id="auction">
-          <Reveal className="section-head">
-            <span className="section-index">07</span>
-            <KineticHeading text="Online aukce" className="section-title" />
-          </Reveal>
-
-          <Reveal className="auction-countdown" delay={100}>
-            {countdown.done ? (
-              <p className="countdown-done">Aukce byla ukončena.</p>
-            ) : (
-              <div className="count-grid" aria-live="polite" aria-label="Odpočet do konce aukce">
-                <CountUnit value={countdown.days} label="dní" />
-                <span className="count-sep" aria-hidden="true">:</span>
-                <CountUnit value={countdown.hours} label="hodin" />
-                <span className="count-sep" aria-hidden="true">:</span>
-                <CountUnit value={countdown.minutes} label="minut" />
-                <span className="count-sep" aria-hidden="true">:</span>
-                <CountUnit value={countdown.seconds} label="sekund" />
-              </div>
-            )}
-            <p className="auction-end-note">Ukončení: 20. listopadu 2026 ve 20:30</p>
-          </Reveal>
-
-          <div className="auction-grid" role="list" aria-label="Dražené předměty">
-            {auctionItems.map((item, i) => (
-              <Reveal key={item.title} delay={i * 100}>
-                <AuctionCard item={item} currentBid={currentBid} />
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal className="bid-wrap" delay={150}>
-            <form className="bid-form" onSubmit={submitBid}>
-              <h3>Přihodit v aukci</h3>
-              <div className="field">
-                <input
-                  id="bid-name"
-                  name="bid-name"
-                  value={bidName}
-                  onChange={(e) => setBidName(e.target.value)}
-                  placeholder=" "
-                  autoComplete="name"
-                />
-                <label htmlFor="bid-name">Vaše jméno</label>
-              </div>
-
-              <div className="field">
-                <input
-                  id="bid-amount"
-                  name="bid-amount"
-                  type="number"
-                  min={currentBid + 1}
-                  step="100"
-                  value={bidAmount}
-                  onChange={(e) => setBidAmount(e.target.value)}
-                  placeholder=" "
-                />
-                <label htmlFor="bid-amount">Výše příhozu (min. {formatMoney(currentBid + 100)})</label>
-              </div>
-
-              <label className="checkbox-row" htmlFor="adult-check" data-cursor="hover">
-                <input
-                  id="adult-check"
-                  name="adult-check"
-                  type="checkbox"
-                  checked={isAdult}
-                  onChange={(e) => setIsAdult(e.target.checked)}
-                />
-                <span className="checkbox-box" aria-hidden="true" />
-                Potvrzuji, že mi je 18 a více let.
-              </label>
-
-              <MagneticButton type="submit">Potvrdit příhoz</MagneticButton>
-
-              {bidFeedback && (
-                <p className={`form-feedback is-${bidFeedback.tone}`} role="status">
-                  {bidFeedback.text}
-                </p>
-              )}
-            </form>
           </Reveal>
         </section>
 
@@ -918,13 +943,42 @@ function App() {
           </Reveal>
           <div className="partners-grid" role="list" aria-label="Partneři akce">
             {partners.map((partner, i) => (
-              <Reveal key={partner} delay={i * 60}>
+              <Reveal key={partner.name} delay={i * 60}>
                 <article className="partner-cell" role="listitem" data-cursor="hover">
-                  <span>{partner}</span>
+                  {partner.url && partner.url !== '#' ? (
+                    <a href={partner.url} target="_blank" rel="noreferrer">
+                      <span>{partner.name}</span>
+                    </a>
+                  ) : (
+                    <span>{partner.name}</span>
+                  )}
                 </article>
               </Reveal>
             ))}
           </div>
+
+          <Reveal className="supporting-block" delay={140}>
+            <div className="supporting-copy">
+              <h3>Duchovní záštita celého projektu</h3>
+              <a href={spiritualPatron.url} target="_blank" rel="noreferrer">
+                {spiritualPatron.name}
+              </a>
+            </div>
+          </Reveal>
+
+          <Reveal className="patrons-wrap" delay={180}>
+            <div className="patrons-copy">
+              <h3>Pokračování projektu „Pro zdraví národa“</h3>
+              <div className="patrons-list" role="list" aria-label="Patroni koncertů">
+                {projectPatrons.map((patron) => (
+                  <a key={patron.year} href={patron.url} target="_blank" rel="noreferrer" role="listitem">
+                    <span>{patron.year}</span>
+                    <strong>{patron.name}</strong>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* ================= contact / footer CTA ================= */}
@@ -936,11 +990,8 @@ function App() {
               <MagneticButton href="#tickets">Koupit vstupenku</MagneticButton>
             </div>
             <address className="contact-details">
-              <a href="mailto:info@prozdravinaroda.cz" data-cursor="hover">
-                info@prozdravinaroda.cz
-              </a>
-              <a href="tel:+420777123456" data-cursor="hover">
-                +420 777 123 456
+              <a href={`mailto:${EVENT_EMAIL}`} data-cursor="hover">
+                {EVENT_EMAIL}
               </a>
             </address>
           </Reveal>
@@ -1072,24 +1123,6 @@ function ArtistsSection() {
         </div>
       </div>
     </section>
-  )
-}
-
-function AuctionCard({ item, currentBid }: { item: AuctionItem; currentBid: number }) {
-  const ref = useTilt<HTMLElement>(6)
-  return (
-    <article className="auction-card" ref={ref} role="listitem" data-cursor="hover">
-      <div className="auction-glare" aria-hidden="true" />
-      <div className="auction-visual" aria-hidden="true">
-        <span className="auction-visual-mark">✦</span>
-      </div>
-      <h3>{item.title}</h3>
-      <p>{item.description}</p>
-      <div className="auction-bid">
-        <span>Aktuální nabídka</span>
-        <strong>{formatMoney(Math.max(item.highestBid, currentBid))}</strong>
-      </div>
-    </article>
   )
 }
 

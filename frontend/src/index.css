@@ -4,19 +4,19 @@
    ============================================================ */
 
 :root {
-  /* palette — deep ink + bone + electric amber */
-  --ink-0: #08070b;
-  --ink-1: #0e0d14;
-  --ink-2: #16141f;
-  --ink-3: #211e2e;
-  --bone: #f3efe6;
-  --bone-dim: #cfc9bb;
-  --bone-soft: #948e80;
-  --amber: #ffb443;
-  --amber-hot: #ff8a2a;
+  /* palette — warm, earthy and orange-toned as requested in the assignment */
+  --ink-0: #f7efe6;
+  --ink-1: #f2dfc8;
+  --ink-2: #f1c89a;
+  --ink-3: #ecad6f;
+  --bone: #2d1d15;
+  --bone-dim: #4a3529;
+  --bone-soft: #6d4a38;
+  --amber: rgb(235, 120, 16);
+  --amber-hot: rgb(214, 90, 0);
   --violet: #8a7bff;
-  --line: rgb(243 239 230 / 12%);
-  --line-strong: rgb(243 239 230 / 26%);
+  --line: rgb(45 29 21 / 12%);
+  --line-strong: rgb(45 29 21 / 26%);
 
   /* fluid type scale — clamp() from 360px → 1600px viewport */
   --step--2: clamp(0.66rem, 0.62rem + 0.18vw, 0.79rem);
@@ -77,7 +77,8 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--ink-0);
+  background: linear-gradient(180deg, #f7efe6 0%, #f4e5d7 100%);
+  color: var(--bone);
   overflow-x: clip;
 }
 
