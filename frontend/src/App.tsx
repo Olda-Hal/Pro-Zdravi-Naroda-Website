@@ -375,6 +375,10 @@ function App() {
     () => Math.min(Math.round((apiStats.sold_tickets / apiStats.total_tickets) * 100), 100),
     [apiStats.sold_tickets, apiStats.total_tickets],
   )
+  const liveStandingTickets = useMemo(
+    () => Math.min(STANDING_TICKETS, apiStats.total_tickets),
+    [apiStats.total_tickets],
+  )
 
   const loadTicketStats = useCallback(async () => {
     try {
@@ -387,7 +391,13 @@ function App() {
     }
   }, [])
 
-  useEffect(() => { void loadTicketStats() }, [loadTicketStats])
+  useEffect(() => {
+    void loadTicketStats()
+    const interval = window.setInterval(() => {
+      void loadTicketStats()
+    }, 8000)
+    return () => window.clearInterval(interval)
+  }, [loadTicketStats])
 
   /* scroll progress bar + hero parallax */
   useEffect(() => {
@@ -675,11 +685,11 @@ function App() {
             </div>
             <div role="listitem">
               <span>Vstupné</span>
-              <strong>{formatMoney(TICKET_PRICE)}</strong>
+              <strong>{formatMoney(apiStats.price_per_ticket)}</strong>
             </div>
             <div role="listitem">
               <span>Kapacita</span>
-              <strong>{TOTAL_TICKETS} sedadel / {STANDING_TICKETS} stání</strong>
+              <strong>{apiStats.total_tickets} sedadel / {liveStandingTickets} stání</strong>
             </div>
           </div>
 
@@ -733,13 +743,13 @@ function App() {
               </div>
               <div role="listitem">
                 <strong>
-                  <CountUp target={TOTAL_TICKETS} />
+                  <CountUp target={apiStats.total_tickets} />
                 </strong>
                 <span>sedadel celkem</span>
               </div>
               <div role="listitem">
                 <strong>
-                  <CountUp target={STANDING_TICKETS} />
+                  <CountUp target={liveStandingTickets} />
                 </strong>
                 <span>míst na stání</span>
               </div>
@@ -831,7 +841,7 @@ function App() {
               <div className="ticket-punch ticket-punch-l" />
               <div className="ticket-punch ticket-punch-r" />
               <p className="ticket-brand">Pro zdraví národa</p>
-              <strong className="ticket-price">{formatMoney(TICKET_PRICE)}</strong>
+              <strong className="ticket-price">{formatMoney(apiStats.price_per_ticket)}</strong>
               <span className="ticket-meta">21.10.2026 — 19:00 — CROWD CAFE, PRAHA</span>
               <div className="ticket-barcode">
                 {Array.from({ length: 28 }).map((_, i) => (
@@ -858,7 +868,7 @@ function App() {
                 </li>
                 <li>
                   <span>Kapacita</span>
-                  <strong>{TOTAL_TICKETS} sedadel / {STANDING_TICKETS} na stání</strong>
+                  <strong>{apiStats.total_tickets} sedadel / {liveStandingTickets} na stání</strong>
                 </li>
               </ul>
 
@@ -999,7 +1009,7 @@ function App() {
       </main>
 
       <a className="mobile-cta" href="#tickets">
-        Koupit vstupenku — {formatMoney(TICKET_PRICE)}
+        Koupit vstupenku — {formatMoney(apiStats.price_per_ticket)}
       </a>
 
       <footer className="footer">
