@@ -822,11 +822,7 @@ function App() {
             </div>
             <div className="qr-card" ref={portraitRef} aria-label="QR kód pro dar">
               <div className="qr-glare" aria-hidden="true" />
-              <div className="qr-visual" aria-hidden="true">
-                {Array.from({ length: 64 }).map((_, i) => (
-                  <span key={i} className={(i * 7 + 3) % 5 < 3 ? 'qr-cell is-on' : 'qr-cell'} />
-                ))}
-              </div>
+              <img className="qr-visual" src="/images/qr.png" alt="QR kód pro dar" />
               <p>Dobrovolný dar</p>
             </div>
           </Reveal>
@@ -996,7 +992,7 @@ function App() {
               data-cursor="hover"
             >
               <span className="patron-spiritual-emblem" aria-hidden="true">
-                <img className="patron-spiritual-cross" src="/images/templarsky-rad-logo.png" alt="" />
+                <img className="patron-spiritual-cross" src="/images/templar_cross_white-bkg.png" alt="" />
               </span>
               <span className="patron-spiritual-copy">
                 <span className="patron-spiritual-label">Duchovní záštita celého projektu</span>
