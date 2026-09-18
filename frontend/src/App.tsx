@@ -8,7 +8,6 @@ const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN ?? 'localhost'
 const APP_NAME = import.meta.env.VITE_APP_NAME ?? 'Pro zdraví národa'
 const ACCOUNT_NUMBER = import.meta.env.VITE_ACCOUNT_NUMBER ?? '2403575844/2010'
 const EVENT_LOCATION = import.meta.env.VITE_EVENT_LOCATION ?? 'CROWD CAFE, PRAHA'
-const EVENT_URL = import.meta.env.VITE_EVENT_URL ?? 'https://www.crowdcafe.cz/'
 const EVENT_EMAIL = import.meta.env.VITE_EVENT_EMAIL ?? 'info@prozdravinaroda.cz'
 const EVENT_DATE = import.meta.env.VITE_EVENT_DATE ?? '21.10.2026'
 const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '19:00'
@@ -27,16 +26,20 @@ type Artist = {
   initials: string
   hue: number
   link: string
+  image: string
+  imagePosition?: string
 }
 
 const artists: Artist[] = [
   {
     name: 'Jaroslav Svěcený',
     role: 'Hudební produkce',
-    detail: 'Na jednom pódiu se spojí slova a hudba pro Alfréda od přátel.',
+    detail: 'Na jednom pódiu se spojí slova a hudba pro Alfreda od přátel.',
     initials: 'JS',
     hue: 34,
     link: 'https://www.sveceny.cz/',
+    image: encodeURI('/images/Jarda Svěcený.jpg'),
+    imagePosition: 'center 24%',
   },
   {
     name: 'Cimbál classic',
@@ -45,22 +48,28 @@ const artists: Artist[] = [
     initials: 'CC',
     hue: 16,
     link: 'https://cimbalclassic.net/',
+    image: encodeURI('/images/Cimbalclassic 1.jpg'),
+    imagePosition: 'center 28%',
   },
   {
-    name: 'Alfréd Strejček',
+    name: 'Alfred Strejček',
     role: 'Patron a host',
-    detail: 'Karel IV první vstup, osobní i společenský příklad pro diváky.',
+    detail: 'Karel IV první vstup, osobní i společenský příklad pro národ.',
     initials: 'AS',
     hue: 196,
     link: 'https://www.alfredstrejcek.cz/',
+    image: encodeURI('/images/Alfred Strejček 7.jfif'),
+    imagePosition: 'center 18%',
   },
   {
     name: 'Martina Kociánová',
     role: 'Moderátorka',
-    detail: 'Slovem celý koncert moderuje a propojuje hudbu, myšlenku a lidstvo.',
+    detail: 'Celý večer moderuje a propojuje hudbu, slova, a myšlenky.',
     initials: 'MK',
     hue: 278,
     link: 'https://www.alfredstrejcek.cz/',
+    image: encodeURI('/images/Kociánová Martina 2.jfif'),
+    imagePosition: 'center 20%',
   },
 ]
 
@@ -68,21 +77,22 @@ const timeline = [
   { time: '17:00', title: 'Otevření CROWD CAFE', detail: 'Přivítání hostů a zahájení večera.' },
   { time: '18:00', title: 'Zahájení večera', detail: 'Úvodní slovo pořadatelů.' },
   { time: '18:15', title: 'Zahájení hudební produkce', detail: 'Jaroslav Svěcený uvádí hudební část programu.' },
-  { time: '18:25', title: 'Slovní vstup – proslov', detail: 'Úvodní proslov Alfréda Strejčka k podpoře zdraví národa.' },
-  { time: '18:30', title: 'Pohádkové sudičky', detail: 'Pohádkově laděný mezní moment celého večera.' },
+  { time: '18:25', title: 'Slovní vstup – proslov', detail: 'Karel IV v zastoupení Alfredem Strejčkem na podporu zdraví národa.' },
+  { time: '18:30', title: 'Vystoupení sudiček', detail: 'Pohádkově laděný mezní moment celého večera.' },
   { time: '18:45', title: 'Pokračuje hudební produkce', detail: 'Cimbál classic a Jaroslav Svěcený předávají hudbu dál.' },
   { time: '19:45', title: 'Závěr večera a poděkování', detail: 'Oslava, závěrečné poděkování a společné vyjádření podpory.' },
 ]
 
 const partners = [
-  { name: 'Dlouhé zdraví', url: 'https://www.dlouhezdravi.com/' },
   { name: 'CROWD CAFE', url: 'https://www.crowdcafe.cz/' },
-  { name: 'KLM invest, a.s.', url: '#' },
+  { name: 'Dlouhé zdraví', url: 'https://www.dlouhezdravi.com/' },
   { name: 'Magnolie cukrárna', url: 'https://www.cukrarnamagnolie.cz/' },
+  { name: 'KLM invest, a.s.', url: '#' },
 ]
 
 const spiritualPatron = {
-  name: 'Český Templářský Řád O.S.M.T.H, komenda Čejkovice',
+  order: 'Český Templářský Řád O.S.M.T.H',
+  komenda: 'Komenda Čejkovice',
   url: 'https://osmth.cz/',
 }
 
@@ -633,7 +643,7 @@ function App() {
               <div className="hero-portrait-frame" ref={heroPortraitRef} data-cursor="hover">
                 <img
                   className="hero-portrait-image"
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Charles_IV_%28HRR%29.jpg/640px-Charles_IV_%28HRR%29.jpg"
+                  src={encodeURI('/images/Výstřižek.JPG')}
                   alt="Karel IV"
                 />
                 <div className="hero-portrait-glare" aria-hidden="true" />
@@ -656,9 +666,13 @@ function App() {
             <div className="hero-audience-portrait">
               <div className="hero-portrait-frame hero-portrait-frame-small" aria-hidden="true">
                 <div className="hero-portrait-visual">
+                  <img
+                    className="hero-portrait-photo"
+                    src={encodeURI('/images/Strejček Alfred 15.JPG')}
+                    alt=""
+                  />
                   <span className="hero-portrait-rings" />
                   <span className="hero-portrait-glow" />
-                  <span className="hero-portrait-silhouette" />
                 </div>
               </div>
             </div>
@@ -736,11 +750,11 @@ function App() {
               kvalitu s&nbsp;jasným posláním.
             </p>
             <p className="about-lead">
-              Vytváříme tak prostor, kde podpora dostává konkrétní podobu a každý host je součástí
+              <em>Vytváříme tak prostor</em>, kde podpora dostává konkrétní podobu a každý host je součástí
               skutečné pomoci.
             </p>
             <p className="about-lead">
-              Zdraví národa začíná u jednotlivce ukotveného a znalého svých kořenů a odpovědného
+              <em>Zdraví národa začíná</em> u jednotlivce ukotveného a znalého svých kořenů a odpovědného
               k odkazu předků.
             </p>
             <div className="about-stats" role="list">
@@ -805,10 +819,6 @@ function App() {
                   {copied ? '✓ Zkopírováno' : 'Kliknutím zkopírovat'}
                 </span>
               </button>
-              <a className="text-link" href={EVENT_URL} target="_blank" rel="noreferrer" data-cursor="hover">
-                CROWD CAFE, Praha
-                <span aria-hidden="true"> ↗</span>
-              </a>
             </div>
             <div className="qr-card" ref={portraitRef} aria-label="QR kód pro dar">
               <div className="qr-glare" aria-hidden="true" />
@@ -977,18 +987,29 @@ function App() {
             ))}
           </div>
 
-          <Reveal className="supporting-block" delay={140}>
-            <div className="supporting-copy">
-              <h3>Duchovní záštita celého projektu</h3>
-              <a href={spiritualPatron.url} target="_blank" rel="noreferrer">
-                {spiritualPatron.name}
-              </a>
-            </div>
+          <Reveal className="patron-spiritual" delay={140}>
+            <a
+              className="patron-spiritual-card"
+              href={spiritualPatron.url}
+              target="_blank"
+              rel="noreferrer"
+              data-cursor="hover"
+            >
+              <span className="patron-spiritual-emblem" aria-hidden="true">
+                <img className="patron-spiritual-cross" src="/images/templarsky-rad-logo.png" alt="" />
+              </span>
+              <span className="patron-spiritual-copy">
+                <span className="patron-spiritual-label">Duchovní záštita celého projektu</span>
+                <strong className="patron-spiritual-order">{spiritualPatron.order}</strong>
+                <span className="patron-spiritual-komenda">{spiritualPatron.komenda}</span>
+              </span>
+            </a>
           </Reveal>
 
           <Reveal className="patrons-wrap" delay={180}>
             <div className="patrons-copy">
               <h3>Pokračování projektu „{APP_NAME}“</h3>
+              <h4>Patroni následujících koncertů:</h4>
               <div className="patrons-list" role="list" aria-label="Patroni koncertů">
                 {projectPatrons.map((patron) => (
                   <a key={patron.year} href={patron.url} target="_blank" rel="noreferrer" role="listitem">
@@ -1051,30 +1072,19 @@ function ArtistsSection() {
     const preview = previewRef.current
     if (!list || !preview || window.matchMedia('(pointer: coarse)').matches) return
 
-    let x = 0
-    let y = 0
-    let tx = 0
-    let ty = 0
-    let raf = 0
-
     const onMove = (e: MouseEvent) => {
       const rect = list.getBoundingClientRect()
-      tx = e.clientX - rect.left
-      ty = e.clientY - rect.top
-    }
-    const loop = () => {
-      x += (tx - x) * 0.13
-      y += (ty - y) * 0.13
-      const tiltZ = Math.max(Math.min((tx - x) * 0.1, 12), -12)
-      preview.style.transform = `translate(${x}px, ${y}px) translate(-50%, -55%) rotate(${tiltZ}deg)`
-      raf = requestAnimationFrame(loop)
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const tiltZ = Math.max(Math.min((x - rect.width / 2) * 0.08, 12), -12)
+      preview.style.left = `${x}px`
+      preview.style.top = `${y}px`
+      preview.style.transform = `translate(-50%, -50%) rotate(${tiltZ}deg)`
     }
 
     list.addEventListener('mousemove', onMove, { passive: true })
-    raf = requestAnimationFrame(loop)
     return () => {
       list.removeEventListener('mousemove', onMove)
-      cancelAnimationFrame(raf)
     }
   }, [])
 
@@ -1087,7 +1097,7 @@ function ArtistsSection() {
 
       <Reveal delay={100}>
         <p className="artists-lead">
-          Na jednom pódiu se pro Alfréda spojí jeho <em>přátelé a kolegové</em> z jeviště.
+          Na jednom pódiu se pro Alfreda spojí jeho <em>přátelé a kolegové</em> z jeviště.
         </p>
       </Reveal>
 
@@ -1127,7 +1137,6 @@ function ArtistsSection() {
           </Reveal>
         ))}
 
-        {/* floating preview — swap initials for artist photos when available */}
         <div className={`artist-preview ${active !== null ? 'is-on' : ''}`} ref={previewRef} aria-hidden="true">
           {artists.map((artist, i) => (
             <div
@@ -1135,8 +1144,12 @@ function ArtistsSection() {
               className={`artist-preview-card ${active === i ? 'is-current' : ''}`}
               style={{ '--artist-hue': artist.hue } as CSSProperties}
             >
-              <span className="artist-preview-silhouette" />
-              <span className="artist-preview-initials">{artist.initials}</span>
+              <img
+                className="artist-preview-photo"
+                src={artist.image}
+                alt=""
+                style={{ objectPosition: artist.imagePosition ?? 'center' }}
+              />
               <span className="artist-preview-role">{artist.role}</span>
             </div>
           ))}
