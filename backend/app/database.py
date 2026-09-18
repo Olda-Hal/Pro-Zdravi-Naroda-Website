@@ -3,7 +3,8 @@ import sqlite3
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "pzn.sqlite3")))
+DATABASE_PATH = Path(
+    os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "pzn.sqlite3")))
 DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 

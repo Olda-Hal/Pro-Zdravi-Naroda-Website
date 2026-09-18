@@ -18,7 +18,8 @@ def normalize_gopay_status(payload: Any) -> str:
     if not isinstance(payload, dict):
         return "pending"
 
-    state = payload.get("state") or payload.get("status") or payload.get("payment_status")
+    state = payload.get("state") or payload.get(
+        "status") or payload.get("payment_status")
     if not isinstance(state, str):
         return "pending"
 
@@ -45,7 +46,8 @@ def request_gopay_access_token(
         response = _client.post(
             f"{base_url}/oauth2/token",
             data={"grant_type": "client_credentials"},
-            headers={"Authorization": _get_basic_auth_header(client_id, client_secret)},
+            headers={"Authorization": _get_basic_auth_header(
+                client_id, client_secret)},
         )
         response.raise_for_status()
         payload = response.json()
@@ -72,15 +74,18 @@ def create_gopay_payment_session(
     client: httpx.Client | None = None,
 ) -> str | None:
     client_id = (client_id or os.getenv("GOPAY_CLIENT_ID", "")).strip()
-    client_secret = (client_secret or os.getenv("GOPAY_CLIENT_SECRET", "")).strip()
+    client_secret = (client_secret or os.getenv(
+        "GOPAY_CLIENT_SECRET", "")).strip()
     if not client_id or not client_secret:
         return None
 
     base_url = (base_url or _get_gopay_base_url()).rstrip("/")
-    return_url = return_url or os.getenv("GOPAY_RETURN_URL") or os.getenv("APP_BASE_URL") or "http://localhost:5173"
+    return_url = return_url or os.getenv("GOPAY_RETURN_URL") or os.getenv(
+        "APP_BASE_URL") or "http://localhost:5173"
     notification_url = notification_url or os.getenv("GOPAY_NOTIFICATION_URL")
 
-    access_token = request_gopay_access_token(client_id, client_secret, base_url, client=client)
+    access_token = request_gopay_access_token(
+        client_id, client_secret, base_url, client=client)
     if not access_token:
         return None
 
@@ -135,12 +140,14 @@ def get_gopay_payment_status(
     client: httpx.Client | None = None,
 ) -> dict[str, Any] | None:
     client_id = (client_id or os.getenv("GOPAY_CLIENT_ID", "")).strip()
-    client_secret = (client_secret or os.getenv("GOPAY_CLIENT_SECRET", "")).strip()
+    client_secret = (client_secret or os.getenv(
+        "GOPAY_CLIENT_SECRET", "")).strip()
     if not client_id or not client_secret or not payment_id:
         return None
 
     base_url = (base_url or _get_gopay_base_url()).rstrip("/")
-    access_token = request_gopay_access_token(client_id, client_secret, base_url, client=client)
+    access_token = request_gopay_access_token(
+        client_id, client_secret, base_url, client=client)
     if not access_token:
         return None
 

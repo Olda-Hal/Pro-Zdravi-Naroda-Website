@@ -3,6 +3,15 @@ import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'http://localhost:5173'
+const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN ?? 'localhost'
+const APP_NAME = import.meta.env.VITE_APP_NAME ?? 'Pro zdraví národa'
+const ACCOUNT_NUMBER = import.meta.env.VITE_ACCOUNT_NUMBER ?? '2403575844/2010'
+const EVENT_LOCATION = import.meta.env.VITE_EVENT_LOCATION ?? 'CROWD CAFE, PRAHA'
+const EVENT_URL = import.meta.env.VITE_EVENT_URL ?? 'https://www.crowdcafe.cz/'
+const EVENT_EMAIL = import.meta.env.VITE_EVENT_EMAIL ?? 'info@prozdravinaroda.cz'
+const EVENT_DATE = import.meta.env.VITE_EVENT_DATE ?? '21.10.2026'
+const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '19:00'
 
 /* ============================== data ============================== */
 
@@ -10,10 +19,6 @@ const TOTAL_TICKETS = 120
 const STANDING_TICKETS = 40
 const SOLD_TICKETS = 74
 const TICKET_PRICE = 1490
-const ACCOUNT_NUMBER = '2403575844/2010'
-const EVENT_LOCATION = 'CROWD CAFE, PRAHA'
-const EVENT_URL = 'https://www.crowdcafe.cz/'
-const EVENT_EMAIL = 'info@prozdravinaroda.cz'
 
 type Artist = {
   name: string
@@ -63,8 +68,8 @@ const timeline = [
   { time: '17:00', title: 'Otevření CROWD CAFE', detail: 'Přivítání hostů a zahájení večera.' },
   { time: '18:00', title: 'Zahájení večera', detail: 'Úvodní slovo pořadatelů.' },
   { time: '18:15', title: 'Zahájení hudební produkce', detail: 'Jaroslav Svěcený uvádí hudební část programu.' },
-  { time: '18:25', title: 'KAREL IV první vstup', detail: 'Alfréd Strejček v prvním hudebním vstupu.' },
-  { time: '18:30', title: 'Vystoupení sudiček', detail: 'Vánočně laděný mezní moment celého večera.' },
+  { time: '18:25', title: 'Slovní vstup – proslov', detail: 'Úvodní proslov Alfréda Strejčka k podpoře zdraví národa.' },
+  { time: '18:30', title: 'Pohádkové sudičky', detail: 'Pohádkově laděný mezní moment celého večera.' },
   { time: '18:45', title: 'Pokračuje hudební produkce', detail: 'Cimbál classic a Jaroslav Svěcený předávají hudbu dál.' },
   { time: '19:45', title: 'Závěr večera a poděkování', detail: 'Oslava, závěrečné poděkování a společné vyjádření podpory.' },
 ]
@@ -101,11 +106,6 @@ const helpWays = [
   },
   {
     index: '03',
-    title: 'Podpořit projekt',
-    text: 'Finanční dar či vstupenka přidá sílu celému benefičnímu programu.',
-  },
-  {
-    index: '04',
     title: 'Sdílet událost',
     text: 'Pomozte rozšířit dosah akce mezi lidi, kterým téma není lhostejné.',
   },
@@ -548,9 +548,15 @@ function App() {
 
       {/* nav */}
       <header className="nav">
-        <a href="#hero" className="nav-brand" data-cursor="hover" onClick={(e) => { e.preventDefault(); navigate('#hero') }}>
+        <a
+          href={APP_URL}
+          className="nav-brand"
+          data-cursor="hover"
+          aria-label={`Doména aplikace: ${APP_DOMAIN}`}
+          onClick={(e) => { e.preventDefault(); navigate('#hero') }}
+        >
           <span className="nav-brand-mark">PZN</span>
-          <span className="nav-brand-name">Pro zdraví národa</span>
+          <span className="nav-brand-name">{APP_NAME}</span>
         </a>
 
         <nav className={`nav-links ${menuOpen ? 'is-open' : ''}`} aria-label="Hlavní navigace">
@@ -599,7 +605,7 @@ function App() {
             <div className="hero-main">
               <p className="hero-eyebrow">
                 <span className="eyebrow-dot" aria-hidden="true" />
-                Patron koncertu: Karel IV
+                Benefiční koncert pro {APP_NAME.toLowerCase()}
               </p>
 
               <h1 className="hero-title" aria-label="Hudba a slova, která probouzejí a upevňují zdraví národa.">
@@ -620,43 +626,41 @@ function App() {
                   <span className="hero-line-inner">zdraví národa.</span>
                 </span>
               </h1>
+
             </div>
 
-            {/* portrét — nahraďte vizuál skutečnou fotografií (např. <img src={portrait} alt="Alfréd Strejček" />) */}
             <figure className="hero-portrait">
               <div className="hero-portrait-frame" ref={heroPortraitRef} data-cursor="hover">
-                <div className="hero-portrait-visual" aria-hidden="true">
-                  <span className="hero-portrait-rings" />
-                  <span className="hero-portrait-glow" />
-                  <span className="hero-portrait-silhouette" />
-                </div>
+                <img
+                  className="hero-portrait-image"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Charles_IV_%28HRR%29.jpg/640px-Charles_IV_%28HRR%29.jpg"
+                  alt="Karel IV"
+                />
                 <div className="hero-portrait-glare" aria-hidden="true" />
                 <span className="hero-portrait-tag" aria-hidden="true">
-                  21 / 10 / 2026
+                  Patron ročníku
                 </span>
               </div>
               <figcaption>
-                <strong>Alfréd Strejček</strong>
-                <span>První koncert pro zdraví národa</span>
+                <strong>Karel IV.</strong>
+                <span>Patron ročníku</span>
               </figcaption>
             </figure>
           </div>
 
-          <div className="hero-patron" role="note" aria-label="Patron ročníku a jeho význam">
-            <div className="hero-patron-photo">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Charles_IV_%28HRR%29.jpg/640px-Charles_IV_%28HRR%29.jpg"
-                alt="Karel IV"
-              />
+          <div className="hero-audience" role="note" aria-label="Pro koho je akce">
+            <div className="hero-audience-copy">
+              <span className="hero-patron-label">Pro koho to je</span>
+              <h3>Pro všechny, kdo chtějí společně podpořit zdraví národa a posílit společnou odpovědnost.</h3>
             </div>
-            <div className="hero-patron-copy">
-              <span className="hero-patron-label">Patron ročníku</span>
-              <h2>Karel IV.</h2>
-              <p>
-                Osobnost, která svým životem, vládou a dílem upevňovala zdraví národa,
-                jeho kulturu a vzájemnou odpovědnost. Právě proto je první koncert věnován
-                vzoru, jenž ukazuje, jak důležité je chránit kořeny, vědomí i společný odkaz.
-              </p>
+            <div className="hero-audience-portrait">
+              <div className="hero-portrait-frame hero-portrait-frame-small" aria-hidden="true">
+                <div className="hero-portrait-visual">
+                  <span className="hero-portrait-rings" />
+                  <span className="hero-portrait-glow" />
+                  <span className="hero-portrait-silhouette" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -706,11 +710,11 @@ function App() {
               <div className="marquee-group" key={i}>
                 <span>CROWD CAFE</span>
                 <span className="marquee-star">✦</span>
-                <span>21.10.2026</span>
+                <span>{EVENT_DATE}</span>
                 <span className="marquee-star">✦</span>
                 <span>Benefiční koncert</span>
                 <span className="marquee-star">✦</span>
-                <span>Pro zdraví národa</span>
+                <span>{APP_NAME}</span>
                 <span className="marquee-star">✦</span>
               </div>
             ))}
@@ -729,9 +733,15 @@ function App() {
           <Reveal className="about-body" delay={120}>
             <p className="about-lead">
               <em>Pro zdraví národa</em> je benefiční kulturní večer, který propojuje uměleckou
-              kvalitu s&nbsp;jasným posláním. Vytváříme tak prostor, kde podpora dostává konkrétní
-              podobu a každý host je součástí skutečné pomoci. Zdraví národa začíná u jednotlivce
-              ukotveného a znalého svých kořenů a odpovědného k odkazu předků.
+              kvalitu s&nbsp;jasným posláním.
+            </p>
+            <p className="about-lead">
+              Vytváříme tak prostor, kde podpora dostává konkrétní podobu a každý host je součástí
+              skutečné pomoci.
+            </p>
+            <p className="about-lead">
+              Zdraví národa začíná u jednotlivce ukotveného a znalého svých kořenů a odpovědného
+              k odkazu předků.
             </p>
             <div className="about-stats" role="list">
               <div role="listitem">
@@ -840,9 +850,9 @@ function App() {
             <div className="ticket-card" aria-hidden="true">
               <div className="ticket-punch ticket-punch-l" />
               <div className="ticket-punch ticket-punch-r" />
-              <p className="ticket-brand">Pro zdraví národa</p>
+              <p className="ticket-brand">{APP_NAME}</p>
               <strong className="ticket-price">{formatMoney(apiStats.price_per_ticket)}</strong>
-              <span className="ticket-meta">21.10.2026 — 19:00 — CROWD CAFE, PRAHA</span>
+              <span className="ticket-meta">{EVENT_DATE} — {EVENT_TIME} — {EVENT_LOCATION}</span>
               <div className="ticket-barcode">
                 {Array.from({ length: 28 }).map((_, i) => (
                   <span key={i} style={{ width: `${((i * 13) % 4) + 1}px` }} />
@@ -856,11 +866,11 @@ function App() {
               <ul className="tickets-list">
                 <li>
                   <span>Datum</span>
-                  <strong>21.10.2026</strong>
+                  <strong>{EVENT_DATE}</strong>
                 </li>
                 <li>
                   <span>Čas</span>
-                  <strong>19:00</strong>
+                  <strong>{EVENT_TIME}</strong>
                 </li>
                 <li>
                   <span>Místo</span>
@@ -978,7 +988,7 @@ function App() {
 
           <Reveal className="patrons-wrap" delay={180}>
             <div className="patrons-copy">
-              <h3>Pokračování projektu „Pro zdraví národa“</h3>
+              <h3>Pokračování projektu „{APP_NAME}“</h3>
               <div className="patrons-list" role="list" aria-label="Patroni koncertů">
                 {projectPatrons.map((patron) => (
                   <a key={patron.year} href={patron.url} target="_blank" rel="noreferrer" role="listitem">
@@ -1013,7 +1023,7 @@ function App() {
       </a>
 
       <footer className="footer">
-        <p>Pro zdraví národa © 2026</p>
+        <p>{APP_NAME} © 2026</p>
         <a
           href="#hero"
           data-cursor="hover"

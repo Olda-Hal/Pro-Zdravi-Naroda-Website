@@ -345,6 +345,16 @@ body.cursor-active .cursor-ring {
   will-change: transform;
 }
 
+.hero-portrait-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.9) contrast(1.08) brightness(0.9);
+}
+
 .hero-portrait-frame:hover {
   border-color: rgb(255 180 67 / 45%);
 }
@@ -461,6 +471,44 @@ body.cursor-active .cursor-ring {
   backdrop-filter: blur(12px);
   box-shadow: 0 20px 55px rgb(45 29 21 / 10%);
   animation: fade-up 0.9s var(--ease-out-expo) 0.75s both;
+}
+
+.hero-audience {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px);
+  align-items: center;
+  gap: var(--space-m);
+  width: min(100%, 740px);
+  margin-top: var(--space-m);
+  padding: var(--space-m);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hero-audience-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hero-audience-copy h3 {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--bone);
+}
+
+.hero-audience-portrait {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-portrait-frame-small {
+  width: min(100%, 150px);
+  aspect-ratio: 4 / 5;
+  border-radius: 999px 999px 20px 20px;
 }
 
 .hero-patron-photo {
@@ -1033,6 +1081,12 @@ body.cursor-active .cursor-ring {
   line-height: 1.45;
   letter-spacing: var(--track-snug);
   color: var(--bone);
+  margin: 0;
+}
+
+.about-body {
+  display: grid;
+  gap: 1rem;
 }
 
 .about-lead em {
@@ -1091,8 +1145,9 @@ body.cursor-active .cursor-ring {
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
-  padding: var(--space-m);
+  height: 100%;
   min-height: clamp(220px, 26vw, 300px);
+  padding: var(--space-m);
   background: var(--ink-0);
   overflow: hidden;
   transition: background 0.5s var(--ease-out-expo);

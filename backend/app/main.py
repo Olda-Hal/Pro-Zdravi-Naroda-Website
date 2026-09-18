@@ -20,7 +20,8 @@ def parse_origins(value: str) -> list[str]:
 
 
 DEFAULT_CORS_ORIGINS = "http://localhost:5173,http://localhost:3000,http://localhost:8092"
-cors_allow_origins = parse_origins(os.getenv("CORS_ALLOW_ORIGINS", DEFAULT_CORS_ORIGINS))
+cors_allow_origins = parse_origins(
+    os.getenv("CORS_ALLOW_ORIGINS", DEFAULT_CORS_ORIGINS))
 
 app.add_middleware(
     CORSMiddleware,
@@ -97,7 +98,8 @@ def health_db() -> dict[str, str | int]:
             value = conn.execute("SELECT 1").fetchone()[0]
         return {"status": "ok", "db": value}
     except Exception as exc:
-        raise HTTPException(status_code=503, detail=f"Database unavailable: {exc}")
+        raise HTTPException(
+            status_code=503, detail=f"Database unavailable: {exc}")
 
 
 @app.get("/api/tickets/stats", response_model=TicketStats)
@@ -118,14 +120,16 @@ def get_ticket_stats() -> TicketStats:
 @app.post("/api/tickets/orders", response_model=OrderResponse)
 def create_order(payload: OrderCreate) -> OrderResponse:
     if payload.ticket_count < 1:
-        raise HTTPException(status_code=400, detail="Počet vstupenek musí být kladný.")
+        raise HTTPException(
+            status_code=400, detail="Počet vstupenek musí být kladný.")
 
     with get_connection() as conn:
         sold = conn.execute(
             "SELECT COALESCE(SUM(ticket_count), 0) FROM orders WHERE status IN ('pending', 'paid')"
         ).fetchone()[0]
         if payload.ticket_count + int(sold) > TOTAL_TICKETS:
-            raise HTTPException(status_code=409, detail="Není dostatek volných vstupenek.")
+            raise HTTPException(
+                status_code=409, detail="Není dostatek volných vstupenek.")
 
         now = utc_now()
         order_id = f"ord-{int(datetime.now(timezone.utc).timestamp() * 1000)}"
@@ -176,7 +180,8 @@ def get_order(order_id: str) -> OrderResponse:
             (order_id,),
         ).fetchone()
         if row is None:
-            raise HTTPException(status_code=404, detail="Objednávka nebyla nalezena.")
+            raise HTTPException(
+                status_code=404, detail="Objednávka nebyla nalezena.")
 
     return OrderResponse(
         id=row["id"],
@@ -213,9 +218,11 @@ def payment_providers() -> dict[str, object]:
 @app.post("/api/tickets/orders/{order_id}/payment", response_model=PaymentResponse)
 def create_payment(order_id: str, payload: PaymentCreate) -> PaymentResponse:
     with get_connection() as conn:
-        order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        order = conn.execute(
+            "SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
         if order is None:
-            raise HTTPException(status_code=404, detail="Objednávka nebyla nalezena.")
+            raise HTTPException(
+                status_code=404, detail="Objednávka nebyla nalezena.")
 
     provider = payload.provider.lower()
     payment_id = f"pay-{int(datetime.now(timezone.utc).timestamp() * 1000)}"
@@ -234,7 +241,8 @@ def create_payment(order_id: str, payload: PaymentCreate) -> PaymentResponse:
                 customer_email=order["customer_email"],
                 client_id=client_id,
                 client_secret=secret,
-                return_url=os.getenv("GOPAY_RETURN_URL") or os.getenv("APP_BASE_URL") or "http://localhost:5173",
+                return_url=os.getenv("GOPAY_RETURN_URL") or os.getenv(
+                    "APP_BASE_URL") or "http://localhost:5173",
                 notification_url=os.getenv("GOPAY_NOTIFICATION_URL"),
             )
         except Exception:
@@ -249,7 +257,8 @@ def create_payment(order_id: str, payload: PaymentCreate) -> PaymentResponse:
             INSERT INTO payments (id, order_id, provider, provider_payment_id, status, amount, redirect_url, created_at, updated_at)
             VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)
             """,
-            (payment_id, order_id, provider, payment_id, order["amount"], redirect_url, now, now),
+            (payment_id, order_id, provider, payment_id,
+             order["amount"], redirect_url, now, now),
         )
         conn.execute(
             "UPDATE orders SET provider = ?, checkout_url = ?, updated_at = ? WHERE id = ?",
@@ -271,9 +280,11 @@ def create_payment(order_id: str, payload: PaymentCreate) -> PaymentResponse:
 @app.post("/api/tickets/orders/{order_id}/confirm")
 def confirm_payment(order_id: str, payment_id: str | None = Query(default=None)) -> dict[str, str | int]:
     with get_connection() as conn:
-        order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        order = conn.execute(
+            "SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
         if order is None:
-            raise HTTPException(status_code=404, detail="Objednávka nebyla nalezena.")
+            raise HTTPException(
+                status_code=404, detail="Objednávka nebyla nalezena.")
 
         payment_row = None
         if payment_id:
@@ -289,8 +300,10 @@ def confirm_payment(order_id: str, payment_id: str | None = Query(default=None))
 
         settled = False
         if order["provider"] == "gopay":
-            provider_payment_id = (payment_row["provider_payment_id"] if payment_row else None) or payment_id
-            gopay_status = get_gopay_payment_status(provider_payment_id or order_id) if provider_payment_id else None
+            provider_payment_id = (
+                payment_row["provider_payment_id"] if payment_row else None) or payment_id
+            gopay_status = get_gopay_payment_status(
+                provider_payment_id or order_id) if provider_payment_id else None
             settled = normalize_gopay_status(gopay_status or {}) == "paid"
 
         if settled or order["status"] == "paid":
@@ -304,7 +317,8 @@ def confirm_payment(order_id: str, payment_id: str | None = Query(default=None))
             )
             conn.execute(
                 "INSERT OR IGNORE INTO ticket_sales (id, order_id, ticket_count, amount, created_at) VALUES (?, ?, ?, ?, ?)",
-                (f"sale-{int(datetime.now(timezone.utc).timestamp() * 1000)}", order_id, order["ticket_count"], order["amount"], utc_now()),
+                (f"sale-{int(datetime.now(timezone.utc).timestamp() * 1000)}",
+                 order_id, order["ticket_count"], order["amount"], utc_now()),
             )
             conn.commit()
             return {"status": "paid", "order_id": order_id, "message": "Platba byla potvrzena."}

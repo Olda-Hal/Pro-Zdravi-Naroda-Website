@@ -12,12 +12,15 @@ class GoPayHelperTests(unittest.TestCase):
             if request.url.path.endswith("/oauth2/token"):
                 self.assertEqual(
                     request.headers.get("Authorization"),
-                    "Basic " + base64.b64encode(b"client-id:client-secret").decode("utf-8"),
+                    "Basic " +
+                    base64.b64encode(
+                        b"client-id:client-secret").decode("utf-8"),
                 )
                 return httpx.Response(200, json={"access_token": "token-123"})
 
             if request.url.path.endswith("/payments"):
-                self.assertEqual(request.headers.get("Authorization"), "Bearer token-123")
+                self.assertEqual(request.headers.get(
+                    "Authorization"), "Bearer token-123")
                 payload = request.read()
                 self.assertIn(b'"order_number":"PZN-1001"', payload)
                 self.assertIn(b'"amount":1490', payload)
@@ -43,7 +46,8 @@ class GoPayHelperTests(unittest.TestCase):
 
     def test_normalize_gopay_status(self):
         self.assertEqual(normalize_gopay_status({"state": "PAID"}), "paid")
-        self.assertEqual(normalize_gopay_status({"state": "CREATED"}), "pending")
+        self.assertEqual(normalize_gopay_status(
+            {"state": "CREATED"}), "pending")
 
 
 if __name__ == "__main__":
