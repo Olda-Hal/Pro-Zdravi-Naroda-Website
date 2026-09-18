@@ -1427,7 +1427,7 @@ body.cursor-active .cursor-ring {
   gap: var(--space-s);
   padding: var(--space-l) var(--space-m);
   border-radius: 20px;
-  background: linear-gradient(150deg, var(--bone), #ddd5c4);
+  background: linear-gradient(150deg, var(--bone), #402c20);
   color: var(--ink-0);
   transform: rotate(-3deg);
   transition: transform 0.5s var(--ease-spring), box-shadow 0.5s;
@@ -1456,7 +1456,7 @@ body.cursor-active .cursor-ring {
   font-size: var(--step--2);
   letter-spacing: var(--track-mega);
   text-transform: uppercase;
-  color: #6d6552;
+  color: rgb(247 239 230 / 65%);
 }
 
 .ticket-price {
@@ -1471,7 +1471,7 @@ body.cursor-active .cursor-ring {
   font-size: var(--step--1);
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
-  color: #6d6552;
+  color: rgb(247 239 230 / 65%);
 }
 
 .ticket-barcode {
@@ -2015,6 +2015,14 @@ body.cursor-active .cursor-ring {
   margin-top: var(--space-l);
 }
 
+.patron-spiritual-heading {
+  margin-bottom: var(--space-s);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 450;
+  color: var(--bone);
+}
+
 .patron-spiritual-card {
   display: flex;
   align-items: center;
@@ -2052,32 +2060,30 @@ body.cursor-active .cursor-ring {
 
 .patron-spiritual-copy {
   display: grid;
-  gap: 0.4rem;
-}
-
-.patron-spiritual-label {
-  font-size: var(--step--2);
-  letter-spacing: var(--track-mega);
-  text-transform: uppercase;
-  color: var(--bone-soft);
+  gap: 0.45rem;
 }
 
 .patron-spiritual-order {
   font-family: var(--font-display);
   font-size: var(--step-1);
   font-weight: 450;
+  line-height: 1.2;
   color: var(--bone);
 }
 
 .patron-spiritual-komenda {
   justify-self: start;
-  padding: 0.3rem 0.85rem;
+  padding: 0.5rem 1.1rem;
   border: 1px solid var(--amber-hot);
   border-radius: 999px;
-  font-size: var(--step--2);
-  letter-spacing: var(--track-mega);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 550;
+  letter-spacing: var(--track-wide);
   text-transform: uppercase;
   color: var(--amber-hot);
+  background: rgb(235 120 16 / 14%);
+  box-shadow: inset 0 0 0 1px rgb(235 120 16 / 20%), 0 0 24px rgb(235 120 16 / 18%);
 }
 
 @media (max-width: 560px) {

@@ -858,7 +858,7 @@ function App() {
               <div className="ticket-punch ticket-punch-r" />
               <p className="ticket-brand">{APP_NAME}</p>
               <strong className="ticket-price">{formatMoney(apiStats.price_per_ticket)}</strong>
-              <span className="ticket-meta">{EVENT_DATE} — {EVENT_TIME} — {EVENT_LOCATION}</span>
+              <span className="ticket-meta">{EVENT_DATE} — 18:00 — {EVENT_LOCATION}</span>
               <div className="ticket-barcode">
                 {Array.from({ length: 28 }).map((_, i) => (
                   <span key={i} style={{ width: `${((i * 13) % 4) + 1}px` }} />
@@ -984,6 +984,7 @@ function App() {
           </div>
 
           <Reveal className="patron-spiritual" delay={140}>
+            <h3 className="patron-spiritual-heading">Duchovní záštita celého projektu</h3>
             <a
               className="patron-spiritual-card"
               href={spiritualPatron.url}
@@ -995,7 +996,6 @@ function App() {
                 <img className="patron-spiritual-cross" src="/images/templar_cross_white-bkg.png" alt="" />
               </span>
               <span className="patron-spiritual-copy">
-                <span className="patron-spiritual-label">Duchovní záštita celého projektu</span>
                 <strong className="patron-spiritual-order">{spiritualPatron.order}</strong>
                 <span className="patron-spiritual-komenda">{spiritualPatron.komenda}</span>
               </span>
