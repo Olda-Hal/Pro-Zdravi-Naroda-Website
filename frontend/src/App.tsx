@@ -485,6 +485,45 @@ function App() {
     }
   }, [])
 
+  const handleHelpAction = useCallback(async (action: 'tickets' | 'account' | 'share') => {
+    if (action === 'tickets') {
+      document.getElementById('tickets')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    if (action === 'account') {
+      document.getElementById('account')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    const shareUrl = APP_URL || window.location.origin
+    const shareText = `Přidejte se k benefičnímu večeru ${APP_NAME}.`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: APP_NAME,
+          text: shareText,
+          url: shareUrl,
+        })
+        return
+      } catch {
+        // User cancelled the native share dialog, continue with a fallback.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      return
+    } catch {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+        '_blank',
+        'noopener,noreferrer',
+      )
+    }
+  }, [])
+
   const navigate = (hash: string) => {
     setMenuOpen(false)
     document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
@@ -622,7 +661,7 @@ function App() {
             <div className="hero-main">
               <p className="hero-eyebrow">
                 <span className="eyebrow-dot" aria-hidden="true" />
-                Benefiční koncert pro {APP_NAME.toLowerCase()}
+                Benefiční koncert {APP_NAME.toLowerCase()}
               </p>
 
               <h1 className="hero-title" aria-label="Hudba a slova, která probouzejí a upevňují zdraví národa.">
@@ -795,18 +834,29 @@ function App() {
             <KineticHeading text="Jak můžete pomoci" className="section-title" />
           </Reveal>
           <div className="ways-grid">
-            {helpWays.map((way, i) => (
-              <Reveal key={way.index} delay={i * 90}>
-                <article className="way-card" data-cursor="hover">
-                  <span className="way-index">{way.index}</span>
-                  <h3>{way.title}</h3>
-                  <p>{way.text}</p>
-                  <span className="way-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </article>
-              </Reveal>
-            ))}
+            {helpWays.map((way, i) => {
+              const action =
+                way.title === 'Koupit vstupenku' ? 'tickets' : way.title === 'Přispět na účet' ? 'account' : 'share'
+
+              return (
+                <Reveal key={way.index} delay={i * 90}>
+                  <button
+                    type="button"
+                    className="way-card"
+                    data-cursor="hover"
+                    onClick={() => void handleHelpAction(action)}
+                    aria-label={way.title}
+                  >
+                    <span className="way-index">{way.index}</span>
+                    <h3>{way.title}</h3>
+                    <p>{way.text}</p>
+                    <span className="way-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </button>
+                </Reveal>
+              )
+            })}
           </div>
         </section>
 
@@ -863,6 +913,9 @@ function App() {
             <div className="ticket-card" aria-hidden="true">
               <div className="ticket-punch ticket-punch-l" />
               <div className="ticket-punch ticket-punch-r" />
+              <div className="ticket-portrait" aria-hidden="true">
+                <img src="/images/karel-iv.png" alt="" />
+              </div>
               <p className="ticket-brand">{APP_NAME}</p>
               <strong className="ticket-price">{formatMoney(apiStats.price_per_ticket)}</strong>
               <span className="ticket-meta">{EVENT_DATE} — 18:00 — {EVENT_LOCATION}</span>

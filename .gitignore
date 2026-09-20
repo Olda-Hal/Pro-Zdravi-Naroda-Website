@@ -11,3 +11,5 @@ backend/data/tickets/
 
 # Environment
 backend/.env
+
+.env
