@@ -87,6 +87,7 @@ const partners = [
   { name: 'CROWD CAFE', url: 'https://www.crowdcafe.cz/' },
   { name: 'Dlouhé zdraví', url: 'https://www.dlouhezdravi.com/' },
   { name: 'Magnolie cukrárna', url: 'https://www.cukrarnamagnolie.cz/' },
+  { name: 'Centrum Preventivní Medicíny Brno', url: 'https://cepem.cz' },
   { name: 'KLM invest, a.s.', url: '#' },
 ]
 
@@ -374,6 +375,14 @@ function App() {
   })
   const [checkoutState, setCheckoutState] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [createdOrder, setCreatedOrder] = useState<{
+    order_number: string
+    amount: number
+    expires_at: string
+    variable_symbol: string
+    account_number: string
+    message: string
+  } | null>(null)
 
   const cursorDot = useRef<HTMLDivElement | null>(null)
   const cursorRing = useRef<HTMLDivElement | null>(null)
@@ -499,7 +508,8 @@ function App() {
     }
 
     setIsSubmitting(true)
-    setCheckoutState({ tone: 'ok', text: 'Vytvářím objednávku a připravuji platbu…' })
+    setCreatedOrder(null)
+    setCheckoutState({ tone: 'ok', text: 'Vytvářím objednávku a připravuji platební instrukce…' })
 
     try {
       const orderRes = await fetch(`${API_BASE_URL}/api/tickets/orders`, {
@@ -509,7 +519,6 @@ function App() {
           customer_name: orderForm.customer_name,
           customer_email: orderForm.customer_email,
           ticket_count: count,
-          payment_provider: 'gopay',
         }),
       })
 
@@ -518,26 +527,24 @@ function App() {
         throw new Error(orderData?.detail || 'Objednávku se nepodařilo vytvořit.')
       }
 
-      const paymentRes = await fetch(`${API_BASE_URL}/api/tickets/orders/${orderData.id}/payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: 'gopay' }),
-      })
-      const paymentData = await paymentRes.json().catch(() => null)
-      if (!paymentRes.ok) {
-        throw new Error(paymentData?.detail || 'Platbu se nepodařilo inicializovat.')
+      const instructions = orderData?.payment_instructions
+      if (!instructions) {
+        throw new Error('Platební instrukce nebyly vráceny.')
       }
 
+      setCreatedOrder({
+        order_number: orderData.order_number,
+        amount: Number(orderData.amount ?? 0),
+        expires_at: String(instructions.expires_at ?? ''),
+        variable_symbol: String(instructions.variable_symbol ?? ''),
+        account_number: String(instructions.account_number ?? ACCOUNT_NUMBER),
+        message: String(instructions.message ?? ''),
+      })
       setCheckoutState({
         tone: 'ok',
-        text: `Objednávka ${orderData.order_number} byla vytvořena. Přesměrování na platební bránu…`,
+        text: `Objednávka ${orderData.order_number} byla vytvořena. Zkontrolujte platební údaje níže.`,
       })
       await loadTicketStats()
-
-      if (paymentData?.redirect_url) {
-        window.location.href = paymentData.redirect_url
-        return
-      }
     } catch (error) {
       setCheckoutState({
         tone: 'err',
@@ -648,12 +655,12 @@ function App() {
                 />
                 <div className="hero-portrait-glare" aria-hidden="true" />
                 <span className="hero-portrait-tag" aria-hidden="true">
-                  Patron ročníku
+                  Patron Koncertu
                 </span>
               </div>
               <figcaption>
                 <strong>Karel IV.</strong>
-                <span>Patron ročníku</span>
+                <span>Patron koncertu</span>
               </figcaption>
             </figure>
           </div>
@@ -948,13 +955,42 @@ function App() {
                 </div>
 
                 <MagneticButton type="submit">
-                  {isSubmitting ? 'Připravuje se platba…' : `Koupit vstupenku — ${formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}`}
+                  {isSubmitting ? 'Připravují se instrukce…' : `Koupit vstupenku — ${formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}`}
                 </MagneticButton>
 
                 {checkoutState && (
                   <p className={`form-feedback is-${checkoutState.tone}`} role="status">
                     {checkoutState.text}
                   </p>
+                )}
+
+                {createdOrder && (
+                  <div className="order-instructions" role="status" aria-live="polite">
+                    <h4>Platební instrukce</h4>
+                    <p>
+                      Objednávka <strong>{createdOrder.order_number}</strong>
+                    </p>
+                    <ul>
+                      <li>
+                        Účet: <strong>{createdOrder.account_number}</strong>
+                      </li>
+                      <li>
+                        Částka: <strong>{formatMoney(createdOrder.amount)}</strong>
+                      </li>
+                      <li>
+                        Variabilní symbol: <strong>{createdOrder.variable_symbol}</strong>
+                      </li>
+                      <li>
+                        Zpráva: <strong>{createdOrder.message || createdOrder.order_number}</strong>
+                      </li>
+                      <li>
+                        Uhradit do: <strong>{new Date(createdOrder.expires_at).toLocaleString('cs-CZ')}</strong>
+                      </li>
+                    </ul>
+                    <p>
+                      Po přijetí platby vám automaticky přijde e-mail s PDF vstupenkou.
+                    </p>
+                  </div>
                 )}
               </form>
             </div>

@@ -1,35 +1,40 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: pzn-db
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "${DB_PORT}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./backend
     container_name: pzn-backend
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_PATH: ${DATABASE_PATH}
       CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS}
+      APP_BASE_URL: ${APP_BASE_URL}
+      APP_NAME: ${APP_NAME}
+      EVENT_TITLE: ${EVENT_TITLE}
+      EVENT_DATE: ${EVENT_DATE}
+      EVENT_TIME: ${EVENT_TIME}
+      EVENT_LOCATION: ${EVENT_LOCATION}
+      TICKET_PRICE_CZK: ${TICKET_PRICE_CZK}
+      TOTAL_TICKETS: ${TOTAL_TICKETS}
+      ORDER_EXPIRATION_MINUTES: ${ORDER_EXPIRATION_MINUTES}
+      TICKETS_DIR: ${TICKETS_DIR}
+      BANK_ACCOUNT_NUMBER: ${BANK_ACCOUNT_NUMBER}
+      BANK_IBAN: ${BANK_IBAN}
+      BANK_CODE: ${BANK_CODE}
+      BANK_MESSAGE_PREFIX: ${BANK_MESSAGE_PREFIX}
+      FIO_API_TOKEN: ${FIO_API_TOKEN}
+      FIO_SYNC_LOOKBACK_DAYS: ${FIO_SYNC_LOOKBACK_DAYS}
+      FIO_SYNC_SECRET: ${FIO_SYNC_SECRET}
+      FIO_SYNC_INTERVAL_SECONDS: ${FIO_SYNC_INTERVAL_SECONDS}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_USE_TLS: ${SMTP_USE_TLS}
+      MAIL_FROM: ${MAIL_FROM}
     ports:
       - "${BACKEND_PORT}:8000"
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./backend/app:/app/app
+      - ./backend/data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 10s
@@ -51,6 +56,3 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
-volumes:
-  postgres_data:
