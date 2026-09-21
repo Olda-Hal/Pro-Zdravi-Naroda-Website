@@ -664,13 +664,13 @@ function App() {
                 Benefiční koncert {APP_NAME.toLowerCase()}
               </p>
 
-              <h1 className="hero-title" aria-label="Hudba a slova, která probouzejí a upevňují zdraví národa.">
+              <h1 className="hero-title" aria-label="Hudba a slova, která probouzí a upevňují zdraví národa.">
                 <span className="hero-line">
                   <span className="hero-line-inner">Hudba a slova,</span>
                 </span>
                 <span className="hero-line hero-line-serif">
                   <span className="hero-line-inner">
-                    která <em>probouzejí</em>
+                    která <em>probouzí</em>
                   </span>
                 </span>
                 <span className="hero-line">
