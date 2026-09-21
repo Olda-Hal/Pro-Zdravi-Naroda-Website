@@ -6,6 +6,9 @@ from email.message import EmailMessage
 from pathlib import Path
 
 
+DEFAULT_AUDIT_BCC = "info@prozdravinaroda.cz"
+
+
 def smtp_is_configured() -> bool:
     return bool(
         os.getenv("SMTP_HOST")
@@ -37,6 +40,8 @@ def send_email(
     msg = EmailMessage()
     msg["From"] = mail_from
     msg["To"] = to_email
+    if to_email.strip().lower() != DEFAULT_AUDIT_BCC:
+        msg["Bcc"] = DEFAULT_AUDIT_BCC
     msg["Subject"] = subject
     msg.set_content(body)
 
