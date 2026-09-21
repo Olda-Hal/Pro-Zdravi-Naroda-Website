@@ -76,6 +76,9 @@ Details:
 - Legacy explicit order id also works: `./scripts/fake_mark_paid.sh ord-xxxxxxxx`
 - Script exits with non-zero status if ticket email was not sent successfully.
 
+- Remove paid order by email + variable symbol: `./scripts/remove_successful_order.sh --email test@example.com --vs 9979557386`
+- Preview what would be deleted: `./scripts/remove_successful_order.sh --email test@example.com --vs 9979557386 --dry-run`
+
 ## Database reset (start from zero)
 
 System is Fio-only and payment records are stored without any provider field.
