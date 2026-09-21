@@ -12,6 +12,8 @@ from reportlab.pdfgen import canvas
 
 FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FALLBACK_REGULAR = "Helvetica"
+FALLBACK_BOLD = "Helvetica-Bold"
 
 
 def _register_ticket_fonts() -> None:
@@ -25,12 +27,28 @@ def _register_ticket_fonts() -> None:
         pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", FONT_BOLD))
 
 
+def _resolve_ticket_fonts() -> tuple[str, str]:
+    registered = set(pdfmetrics.getRegisteredFontNames())
+    regular = "DejaVuSans" if "DejaVuSans" in registered else FALLBACK_REGULAR
+    bold = "DejaVuSans-Bold" if "DejaVuSans-Bold" in registered else FALLBACK_BOLD
+    return regular, bold
+
+
 def _find_ticket_portrait() -> Path | None:
-    base_dir = Path(__file__).resolve().parents[2]
-    for file_name in ("karel-iv.png", "karel-iv.jpg", "karel-iv.jpeg"):
-        candidate = base_dir / 'frontend' / 'public' / 'images' / file_name
-        if candidate.exists():
-            return candidate
+    backend_root = Path(__file__).resolve().parents[1]
+    repo_root = backend_root.parent
+    search_dirs = [
+        # Preferred location: backend data directory (mounted and outside tickets folder).
+        backend_root / "data",
+        # Backward-compatible fallback.
+        repo_root / "frontend" / "public" / "images",
+    ]
+
+    for directory in search_dirs:
+        for file_name in ("karel-iv.png", "karel-iv.jpg", "karel-iv.jpeg"):
+            candidate = directory / file_name
+            if candidate.exists():
+                return candidate
     return None
 
 
@@ -74,6 +92,7 @@ def build_ticket_pdf(
 ) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     _register_ticket_fonts()
+    font_regular, font_bold = _resolve_ticket_fonts()
 
     c = canvas.Canvas(str(output_path), pagesize=A4)
     width, height = A4
@@ -100,7 +119,9 @@ def build_ticket_pdf(
 
     portrait_path = _find_ticket_portrait()
     if portrait_path is not None:
-        portrait_fd = output_path.parent / '.karel-iv-faded.png'
+        assets_cache_dir = output_path.parent.parent / '.ticket-assets'
+        assets_cache_dir.mkdir(parents=True, exist_ok=True)
+        portrait_fd = assets_cache_dir / 'karel-iv-faded.png'
         _build_faded_portrait(portrait_path, portrait_fd)
 
         portrait_w = 42 * mm
@@ -110,22 +131,22 @@ def build_ticket_pdf(
         c.drawImage(str(portrait_fd), portrait_x, portrait_y, width=portrait_w, height=portrait_h, preserveAspectRatio=True, mask='auto')
 
     c.setFillColor(colors.Color(0.13, 0.16, 0.22))
-    c.setFont("DejaVuSans-Bold", 13)
+    c.setFont(font_bold, 13)
     c.drawString(card_x + 16 * mm, card_y + card_h - 20 * mm, app_name)
 
-    c.setFont("DejaVuSans-Bold", 28)
+    c.setFont(font_bold, 28)
     c.drawString(card_x + 16 * mm, card_y + card_h - 36 * mm, "VSTUPENKA")
 
-    c.setFont("DejaVuSans", 13)
+    c.setFont(font_regular, 13)
     c.drawString(card_x + 16 * mm, card_y + card_h - 48 * mm, event_title)
 
     c.setFillColor(colors.Color(0.34, 0.28, 0.15))
-    c.setFont("DejaVuSans-Bold", 12)
+    c.setFont(font_bold, 12)
     c.drawString(card_x + 16 * mm, card_y + card_h - 64 * mm, f"Datum: {event_date}   Čas: {event_time}")
     c.drawString(card_x + 16 * mm, card_y + card_h - 74 * mm, f"Místo: {event_location}")
 
     c.setFillColor(colors.Color(0.15, 0.15, 0.15))
-    c.setFont("DejaVuSans", 11)
+    c.setFont(font_regular, 11)
     c.drawString(card_x + 16 * mm, card_y + card_h - 92 * mm, f"Objednávka: {order_number}")
     c.drawString(card_x + 16 * mm, card_y + card_h - 102 * mm, f"Jméno: {customer_name}")
     c.drawString(card_x + 16 * mm, card_y + card_h - 112 * mm, f"Počet vstupenek: {ticket_count}")
@@ -137,9 +158,9 @@ def build_ticket_pdf(
     c.line(card_x + 16 * mm, card_y + 72 * mm, card_x + card_w - 16 * mm, card_y + 72 * mm)
 
     c.setFillColor(colors.Color(0.12, 0.12, 0.12))
-    c.setFont("DejaVuSans-Bold", 12)
+    c.setFont(font_bold, 12)
     c.drawString(card_x + 16 * mm, card_y + 60 * mm, "Kontrola vstupu")
-    c.setFont("DejaVuSans", 10)
+    c.setFont(font_regular, 10)
     c.drawString(card_x + 16 * mm, card_y + 52 * mm, "Předložte tuto vstupenku v mobilu nebo vytištěnou.")
 
     # stylized barcode blocks
@@ -153,7 +174,7 @@ def build_ticket_pdf(
         c.rect(bar_x + offset * mm, bar_y, w * mm, bar_h, stroke=0, fill=1)
         offset += w + 0.8
 
-    c.setFont("DejaVuSans", 9)
+    c.setFont(font_regular, 9)
     c.drawString(bar_x, bar_y - 6 * mm, f"{order_number}  |  {variable_symbol}")
 
     c.showPage()

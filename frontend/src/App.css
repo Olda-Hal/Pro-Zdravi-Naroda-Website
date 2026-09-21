@@ -1957,7 +1957,7 @@ body.cursor-active .cursor-ring {
   padding: 1rem 1.1rem;
   border-radius: 12px;
   border: 1px solid rgb(255 180 67 / 26%);
-  background: linear-gradient(140deg, rgb(255 180 67 / 10%), rgb(18 23 36 / 35%));
+  background: linear-gradient(140deg, rgb(255 180 67 / 18%), rgb(255 248 236 / 90%));
 }
 
 .order-instructions h4 {
@@ -1968,15 +1968,19 @@ body.cursor-active .cursor-ring {
 
 .order-instructions p {
   margin: 0.4rem 0;
-  color: var(--bone-soft);
+  color: var(--bone);
 }
 
 .order-instructions ul {
   margin: 0.5rem 0;
   padding-left: 1.2rem;
-  color: var(--bone-soft);
+  color: var(--bone);
   display: grid;
   gap: 0.25rem;
+}
+
+.order-instructions strong {
+  color: #2b160c;
 }
 
 /* ---------------- partners ---------------- */

@@ -10,7 +10,7 @@ const ACCOUNT_NUMBER = import.meta.env.VITE_ACCOUNT_NUMBER ?? '2403575844/2010'
 const EVENT_LOCATION = import.meta.env.VITE_EVENT_LOCATION ?? 'CROWD CAFE, PRAHA'
 const EVENT_EMAIL = import.meta.env.VITE_EVENT_EMAIL ?? 'info@prozdravinaroda.cz'
 const EVENT_DATE = import.meta.env.VITE_EVENT_DATE ?? '21.10.2026'
-const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '19:00'
+const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '18:00'
 
 /* ============================== data ============================== */
 

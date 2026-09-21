@@ -25,7 +25,7 @@ TICKETS_DIR = Path(os.getenv("TICKETS_DIR", "./data/tickets"))
 APP_NAME = os.getenv("APP_NAME", "Pro zdravi naroda")
 EVENT_TITLE = os.getenv("EVENT_TITLE", "Beneficni koncert")
 EVENT_DATE = os.getenv("EVENT_DATE", "21.10.2026")
-EVENT_TIME = os.getenv("EVENT_TIME", "19:00")
+EVENT_TIME = os.getenv("EVENT_TIME", "18:00")
 EVENT_LOCATION = os.getenv("EVENT_LOCATION", "CROWD CAFE, PRAHA")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
 

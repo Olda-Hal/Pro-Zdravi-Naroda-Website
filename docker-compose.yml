@@ -4,7 +4,7 @@ services:
       context: ./backend
     container_name: pzn-backend
     environment:
-      DATABASE_PATH: ${DATABASE_PATH}
+      DATABASE_PATH: ${DATABASE_PATH_CONTAINER:-/app/data/pzn.sqlite3}
       CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS}
       APP_BASE_URL: ${APP_BASE_URL}
       APP_NAME: ${APP_NAME}
@@ -15,7 +15,7 @@ services:
       TICKET_PRICE_CZK: ${TICKET_PRICE_CZK}
       TOTAL_TICKETS: ${TOTAL_TICKETS}
       ORDER_EXPIRATION_MINUTES: ${ORDER_EXPIRATION_MINUTES}
-      TICKETS_DIR: ${TICKETS_DIR}
+      TICKETS_DIR: ${TICKETS_DIR_CONTAINER:-/app/data/tickets}
       BANK_ACCOUNT_NUMBER: ${BANK_ACCOUNT_NUMBER}
       BANK_IBAN: ${BANK_IBAN}
       BANK_CODE: ${BANK_CODE}
