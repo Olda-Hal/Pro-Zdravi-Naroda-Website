@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend runtime artifacts
+backend/data/tickets/
+backend/data/*.sqlite3
+backend/data/*.sqlite3-shm
+backend/data/*.sqlite3-wal
+
+# Environment
+backend/.env
+
+.env

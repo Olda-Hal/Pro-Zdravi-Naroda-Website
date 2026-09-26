@@ -10,7 +10,7 @@ const ACCOUNT_NUMBER = import.meta.env.VITE_ACCOUNT_NUMBER ?? '2403575844/2010'
 const EVENT_LOCATION = import.meta.env.VITE_EVENT_LOCATION ?? 'CROWD CAFE, PRAHA'
 const EVENT_EMAIL = import.meta.env.VITE_EVENT_EMAIL ?? 'info@prozdravinaroda.cz'
 const EVENT_DATE = import.meta.env.VITE_EVENT_DATE ?? '21.10.2026'
-const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '19:00'
+const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '18:00'
 
 /* ============================== data ============================== */
 
@@ -87,6 +87,7 @@ const partners = [
   { name: 'CROWD CAFE', url: 'https://www.crowdcafe.cz/' },
   { name: 'Dlouhé zdraví', url: 'https://www.dlouhezdravi.com/' },
   { name: 'Magnolie cukrárna', url: 'https://www.cukrarnamagnolie.cz/' },
+  { name: 'Centrum Preventivní Medicíny Brno', url: 'https://cepem.cz' },
   { name: 'KLM invest, a.s.', url: '#' },
 ]
 
@@ -374,6 +375,14 @@ function App() {
   })
   const [checkoutState, setCheckoutState] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [createdOrder, setCreatedOrder] = useState<{
+    order_number: string
+    amount: number
+    expires_at: string
+    variable_symbol: string
+    account_number: string
+    message: string
+  } | null>(null)
 
   const cursorDot = useRef<HTMLDivElement | null>(null)
   const cursorRing = useRef<HTMLDivElement | null>(null)
@@ -476,6 +485,45 @@ function App() {
     }
   }, [])
 
+  const handleHelpAction = useCallback(async (action: 'tickets' | 'account' | 'share') => {
+    if (action === 'tickets') {
+      document.getElementById('tickets')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    if (action === 'account') {
+      document.getElementById('account')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+
+    const shareUrl = APP_URL || window.location.origin
+    const shareText = `Přidejte se k benefičnímu večeru ${APP_NAME}.`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: APP_NAME,
+          text: shareText,
+          url: shareUrl,
+        })
+        return
+      } catch {
+        // User cancelled the native share dialog, continue with a fallback.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      return
+    } catch {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+        '_blank',
+        'noopener,noreferrer',
+      )
+    }
+  }, [])
+
   const navigate = (hash: string) => {
     setMenuOpen(false)
     document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
@@ -499,7 +547,8 @@ function App() {
     }
 
     setIsSubmitting(true)
-    setCheckoutState({ tone: 'ok', text: 'Vytvářím objednávku a připravuji platbu…' })
+    setCreatedOrder(null)
+    setCheckoutState({ tone: 'ok', text: 'Vytvářím objednávku a připravuji platební instrukce…' })
 
     try {
       const orderRes = await fetch(`${API_BASE_URL}/api/tickets/orders`, {
@@ -509,7 +558,6 @@ function App() {
           customer_name: orderForm.customer_name,
           customer_email: orderForm.customer_email,
           ticket_count: count,
-          payment_provider: 'gopay',
         }),
       })
 
@@ -518,26 +566,24 @@ function App() {
         throw new Error(orderData?.detail || 'Objednávku se nepodařilo vytvořit.')
       }
 
-      const paymentRes = await fetch(`${API_BASE_URL}/api/tickets/orders/${orderData.id}/payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: 'gopay' }),
-      })
-      const paymentData = await paymentRes.json().catch(() => null)
-      if (!paymentRes.ok) {
-        throw new Error(paymentData?.detail || 'Platbu se nepodařilo inicializovat.')
+      const instructions = orderData?.payment_instructions
+      if (!instructions) {
+        throw new Error('Platební instrukce nebyly vráceny.')
       }
 
+      setCreatedOrder({
+        order_number: orderData.order_number,
+        amount: Number(orderData.amount ?? 0),
+        expires_at: String(instructions.expires_at ?? ''),
+        variable_symbol: String(instructions.variable_symbol ?? ''),
+        account_number: String(instructions.account_number ?? ACCOUNT_NUMBER),
+        message: String(instructions.message ?? ''),
+      })
       setCheckoutState({
         tone: 'ok',
-        text: `Objednávka ${orderData.order_number} byla vytvořena. Přesměrování na platební bránu…`,
+        text: `Objednávka ${orderData.order_number} byla vytvořena. Zkontrolujte platební údaje níže.`,
       })
       await loadTicketStats()
-
-      if (paymentData?.redirect_url) {
-        window.location.href = paymentData.redirect_url
-        return
-      }
     } catch (error) {
       setCheckoutState({
         tone: 'err',
@@ -615,16 +661,16 @@ function App() {
             <div className="hero-main">
               <p className="hero-eyebrow">
                 <span className="eyebrow-dot" aria-hidden="true" />
-                Benefiční koncert pro {APP_NAME.toLowerCase()}
+                Benefiční koncert {APP_NAME.toLowerCase()}
               </p>
 
-              <h1 className="hero-title" aria-label="Hudba a slova, která probouzejí a upevňují zdraví národa.">
+              <h1 className="hero-title" aria-label="Hudba a slova, která probouzí a upevňují zdraví národa.">
                 <span className="hero-line">
                   <span className="hero-line-inner">Hudba a slova,</span>
                 </span>
                 <span className="hero-line hero-line-serif">
                   <span className="hero-line-inner">
-                    která <em>probouzejí</em>
+                    která <em>probouzí</em>
                   </span>
                 </span>
                 <span className="hero-line">
@@ -648,12 +694,12 @@ function App() {
                 />
                 <div className="hero-portrait-glare" aria-hidden="true" />
                 <span className="hero-portrait-tag" aria-hidden="true">
-                  Patron ročníku
+                  Patron Koncertu
                 </span>
               </div>
               <figcaption>
                 <strong>Karel IV.</strong>
-                <span>Patron ročníku</span>
+                <span>Patron koncertu</span>
               </figcaption>
             </figure>
           </div>
@@ -788,18 +834,29 @@ function App() {
             <KineticHeading text="Jak můžete pomoci" className="section-title" />
           </Reveal>
           <div className="ways-grid">
-            {helpWays.map((way, i) => (
-              <Reveal key={way.index} delay={i * 90}>
-                <article className="way-card" data-cursor="hover">
-                  <span className="way-index">{way.index}</span>
-                  <h3>{way.title}</h3>
-                  <p>{way.text}</p>
-                  <span className="way-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </article>
-              </Reveal>
-            ))}
+            {helpWays.map((way, i) => {
+              const action =
+                way.title === 'Koupit vstupenku' ? 'tickets' : way.title === 'Přispět na účet' ? 'account' : 'share'
+
+              return (
+                <Reveal key={way.index} delay={i * 90}>
+                  <button
+                    type="button"
+                    className="way-card"
+                    data-cursor="hover"
+                    onClick={() => void handleHelpAction(action)}
+                    aria-label={way.title}
+                  >
+                    <span className="way-index">{way.index}</span>
+                    <h3>{way.title}</h3>
+                    <p>{way.text}</p>
+                    <span className="way-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </button>
+                </Reveal>
+              )
+            })}
           </div>
         </section>
 
@@ -856,6 +913,9 @@ function App() {
             <div className="ticket-card" aria-hidden="true">
               <div className="ticket-punch ticket-punch-l" />
               <div className="ticket-punch ticket-punch-r" />
+              <div className="ticket-portrait" aria-hidden="true">
+                <img src="/images/karel-iv.png" alt="" />
+              </div>
               <p className="ticket-brand">{APP_NAME}</p>
               <strong className="ticket-price">{formatMoney(apiStats.price_per_ticket)}</strong>
               <span className="ticket-meta">{EVENT_DATE} — 18:00 — {EVENT_LOCATION}</span>
@@ -948,13 +1008,42 @@ function App() {
                 </div>
 
                 <MagneticButton type="submit">
-                  {isSubmitting ? 'Připravuje se platba…' : `Koupit vstupenku — ${formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}`}
+                  {isSubmitting ? 'Připravují se instrukce…' : `Koupit vstupenku — ${formatMoney(orderForm.ticket_count * apiStats.price_per_ticket)}`}
                 </MagneticButton>
 
                 {checkoutState && (
                   <p className={`form-feedback is-${checkoutState.tone}`} role="status">
                     {checkoutState.text}
                   </p>
+                )}
+
+                {createdOrder && (
+                  <div className="order-instructions" role="status" aria-live="polite">
+                    <h4>Platební instrukce</h4>
+                    <p>
+                      Objednávka <strong>{createdOrder.order_number}</strong>
+                    </p>
+                    <ul>
+                      <li>
+                        Účet: <strong>{createdOrder.account_number}</strong>
+                      </li>
+                      <li>
+                        Částka: <strong>{formatMoney(createdOrder.amount)}</strong>
+                      </li>
+                      <li>
+                        Variabilní symbol: <strong>{createdOrder.variable_symbol}</strong>
+                      </li>
+                      <li>
+                        Zpráva: <strong>{createdOrder.message || createdOrder.order_number}</strong>
+                      </li>
+                      <li>
+                        Uhradit do: <strong>{new Date(createdOrder.expires_at).toLocaleString('cs-CZ')}</strong>
+                      </li>
+                    </ul>
+                    <p>
+                      Po přijetí platby vám automaticky přijde e-mail s PDF vstupenkou.
+                    </p>
+                  </div>
                 )}
               </form>
             </div>
