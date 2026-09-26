@@ -42,9 +42,9 @@ const artists: Artist[] = [
     imagePosition: 'center 24%',
   },
   {
-    name: 'Cimbál classic',
+    name: 'Cimbal Classic',
     role: 'Tradice a energie',
-    detail: 'Tónová kultura, která přináší půvab a sílu do celého večera.',
+    detail: 'Průzračné a čisté melodie, lyrické, přemýšlivé a vtipné texty propojené přirozeným zpěvem a nadprůměrným muzikantským řemeslem, které přinesou půvab a okrášlí celý večer.',
     initials: 'CC',
     hue: 16,
     link: 'https://cimbalclassic.net/',
@@ -79,7 +79,7 @@ const timeline = [
   { time: '18:15', title: 'Zahájení hudební produkce', detail: 'Jaroslav Svěcený uvádí hudební část programu.' },
   { time: '18:25', title: 'Slovní vstup – proslov', detail: 'Karel IV v zastoupení Alfredem Strejčkem na podporu zdraví národa.' },
   { time: '18:30', title: 'Vystoupení sudiček', detail: 'Pohádkově laděný mezní moment celého večera.' },
-  { time: '18:45', title: 'Pokračuje hudební produkce', detail: 'Cimbál classic a Jaroslav Svěcený předávají hudbu dál.' },
+  { time: '18:45', title: 'Pokračuje hudební produkce', detail: 'Cimbal Classic a Jaroslav Svěcený předávají hudbu dál.' },
   { time: '19:45', title: 'Závěr večera a poděkování', detail: 'Oslava, závěrečné poděkování a společné vyjádření podpory.' },
 ]
 
@@ -1000,6 +1000,14 @@ function App() {
                 <span className="patron-spiritual-komenda">{spiritualPatron.komenda}</span>
               </span>
             </a>
+          </Reveal>
+
+          <Reveal className="patron-spiritual" delay={160}>
+            <h3 className="patron-spiritual-heading">Poděkování</h3>
+            <p className="patron-spiritual-note">
+              Zásluha za zajištění prostor pro tento koncert patří
+              <strong> Paškové Andělce</strong>
+            </p>
           </Reveal>
 
           <Reveal className="patrons-wrap" delay={180}>
