@@ -11,6 +11,8 @@ const EVENT_LOCATION = import.meta.env.VITE_EVENT_LOCATION ?? 'CROWD CAFE, PRAHA
 const EVENT_EMAIL = import.meta.env.VITE_EVENT_EMAIL ?? 'info@prozdravinaroda.cz'
 const EVENT_DATE = import.meta.env.VITE_EVENT_DATE ?? '21.10.2026'
 const EVENT_TIME = import.meta.env.VITE_EVENT_TIME ?? '18:00'
+// Pozastavení prodeje vstupenek — pro opětovné spuštění nastavte VITE_ORDERS_PAUSED=false
+const ORDERS_PAUSED = (import.meta.env.VITE_ORDERS_PAUSED ?? 'true') !== 'false'
 
 /* ============================== data ============================== */
 
@@ -531,6 +533,16 @@ function App() {
 
   const onOrderSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (ORDERS_PAUSED) {
+      setCreatedOrder(null)
+      setCheckoutState({
+        tone: 'err',
+        text: 'Objednávky vstupenek jsou dočasně pozastaveny. Datum koncertu se ze zdravotních důvodů přesouvá — o novém termínu vás budeme informovat.',
+      })
+      return
+    }
+
     const count = Number(orderForm.ticket_count)
 
     if (!orderForm.customer_name.trim()) {
@@ -601,6 +613,11 @@ function App() {
       <div className="cursor-ring" ref={cursorRing} aria-hidden="true" />
       <div className="progress-bar" style={{ transform: `scaleX(${scrollProgress})` }} aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
+
+      {/* announcement banner */}
+      <div className="alert-banner" role="alert">
+        <strong>⚠ Změna termínu:</strong> Datum koncertu se ze zdravotních důvodů přesouvá. Objednávky vstupenek jsou dočasně pozastaveny — o novém termínu vás budeme informovat.
+      </div>
 
       {/* nav */}
       <header className="nav">
@@ -962,6 +979,12 @@ function App() {
 
               <form className="ticket-order-form" id="ticket-order-form" onSubmit={onOrderSubmit}>
                 <h3>Rezervace vstupenek</h3>
+
+                {ORDERS_PAUSED && (
+                  <p className="orders-paused-note" role="status">
+                    Objednávky jsou dočasně pozastaveny — koncert se ze zdravotních důvodů přesouvá na jiný termín.
+                  </p>
+                )}
 
                 <div className="field">
                   <input

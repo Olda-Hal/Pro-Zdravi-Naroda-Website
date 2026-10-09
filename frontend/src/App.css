@@ -5,6 +5,7 @@
 .page {
   position: relative;
   overflow-x: clip;
+  padding-top: var(--banner-h);
 }
 
 /* ---------------- chrome: cursor, progress, grain ---------------- */
@@ -82,7 +83,7 @@ body.cursor-active .cursor-ring {
 
 .nav {
   position: fixed;
-  inset: 0 0 auto 0;
+  inset: var(--banner-h) 0 auto 0;
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1950,6 +1951,18 @@ body.cursor-active .cursor-ring {
 .form-feedback.is-err {
   color: #ff9d8a;
   background: rgb(255 110 90 / 8%);
+}
+
+.orders-paused-note {
+  margin: 0 0 0.4rem;
+  padding: 0.85em 1.1em;
+  border-radius: 10px;
+  font-size: var(--step--1);
+  font-weight: 600;
+  line-height: 1.45;
+  color: #ffd9d2;
+  background: rgb(210 31 31 / 22%);
+  border: 1px solid rgb(255 110 90 / 45%);
 }
 
 .order-instructions {

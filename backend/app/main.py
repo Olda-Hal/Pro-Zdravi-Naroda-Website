@@ -20,6 +20,9 @@ from app.ticket_pdf import build_ticket_pdf
 TOTAL_TICKETS = int(os.getenv("TOTAL_TICKETS", "120"))
 TICKET_PRICE_CZK = int(os.getenv("TICKET_PRICE_CZK", "1490"))
 ORDER_EXPIRATION_MINUTES = int(os.getenv("ORDER_EXPIRATION_MINUTES", "120"))
+# Pozastavení prodeje vstupenek — pro opětovné spuštění nastavte ORDERS_PAUSED=false
+ORDERS_PAUSED = os.getenv("ORDERS_PAUSED", "true").strip().lower() not in ("0", "false", "no")
+
 TICKETS_DIR = Path(os.getenv("TICKETS_DIR", "./data/tickets"))
 
 APP_NAME = os.getenv("APP_NAME", "Pro zdravi naroda")
@@ -581,6 +584,12 @@ def get_ticket_stats() -> TicketStats:
 
 @app.post("/api/tickets/orders", response_model=OrderResponse)
 def create_order(payload: OrderCreate) -> OrderResponse:
+    if ORDERS_PAUSED:
+        raise HTTPException(
+            status_code=503,
+            detail="Objednávky vstupenek jsou dočasně pozastaveny. Datum koncertu se ze zdravotních důvodů přesouvá.",
+        )
+
     if payload.ticket_count < 1:
         raise HTTPException(status_code=400, detail="Počet vstupenek musí být kladný.")
 
